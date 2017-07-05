@@ -37,6 +37,7 @@ func cleanImportSpec(spec *ast.ImportSpec) string {
 // always returns the Package object for the loaded package.
 func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *loader.PackageInfo) *Package {
 	if pi == nil {
+		// FIXME investigate this
 		fmt.Printf("??? No PackageInfo for loadpath=%s\n", loadpath)
 		return nil
 	}
