@@ -14,12 +14,12 @@ func TestMultipleMains(t *testing.T) {
 	)
 
 	pg := goref.NewPackageGraph()
-	pg.LoadProgram(pkgbase + "1/main", filebase + "1/main.go")
+	pg.LoadProgram(pkgbase + "1/main", []string{filebase + "1/main.go"})
 	assert.Contains(t, pg.Packages, pkgbase + "1/main")
 	assert.Contains(t, pg.Packages, pkgbase + "common")
 	common := pg.Packages[pkgbase + "common"]
 	assert.Len(t, pg.Packages, 2)
-	pg.LoadProgram(pkgbase + "2/main", filebase + "2/main.go")
+	pg.LoadProgram(pkgbase + "2/main", []string{filebase + "2/main.go"})
 	assert.Contains(t, pg.Packages, pkgbase + "1/main")
 	assert.Contains(t, pg.Packages, pkgbase + "2/main")
 	assert.Contains(t, pg.Packages, pkgbase + "common")

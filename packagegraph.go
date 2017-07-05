@@ -121,9 +121,9 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 // LoadProgram loads recursively packages used from a `main` package.
 // It may be called multiple times to load multiple programs'
 // package sets in the PackageGraph.
-func (p *PackageGraph) LoadProgram(loadpath string, filename string) {
+func (p *PackageGraph) LoadProgram(loadpath string, filenames []string) {
 	conf := loader.Config{}
-	conf.CreateFromFilenames(loadpath, filename)
+	conf.CreateFromFilenames(loadpath, filenames...)
 
 	prog, err := conf.Load()
 	if err != nil {
