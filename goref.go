@@ -87,7 +87,7 @@ func (rt RefType) String() string {
 type Ref struct {
 	// Type of reference
 	RefType
-	
+
 	// Where this reference points to
 	// FIXME: inrefs should point to a Pos, or to an Identifier,
 	// not to a Position (so we can do inverse matching of "what
@@ -135,7 +135,7 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 	}
 	pkg := newPackage(pi)
 	pg.Packages[loadpath] = pkg
-	
+
 	// Iterate over all files in that package.
 	for _, f := range pi.Files {
 		// Get the File object to represent that file
@@ -165,14 +165,14 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 	// non-local references only.
 	for id, obj := range pi.Uses {
 		// the object's Pkg will be nil for builtins
-		if (obj.Pkg() != nil) {
+		if obj.Pkg() != nil {
 			pkgLoadPath := obj.Pkg().Path()
 			if pkgLoadPath != loadpath {
 				foreignPkg := pg.Packages[pkgLoadPath]
 				ref := &Ref{
-					RefType: refTypeForId(prog, id),
+					RefType:  refTypeForId(prog, id),
 					Position: prog.Fset.Position(id.Pos()),
-					Ident: obj.Name(),
+					Ident:    obj.Name(),
 				}
 
 				// // Walk the file's AST to find OutRefs and index those.
@@ -189,7 +189,6 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 				// 	return true
 				// })
 
-				
 				// FIXME: this pulls the foreign package's
 				// object's Position from the current
 				// package's Fileset. This will not work if
@@ -201,7 +200,7 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 			}
 		}
 	}
-	
+
 	return pkg
 }
 
