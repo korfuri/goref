@@ -1,12 +1,12 @@
 package goref
 
 import (
-	"fmt"
 	"go/ast"
 	"go/token"
 	"go/types"
 	"golang.org/x/tools/go/loader"
 	"log"
+	"path"
 	"strings"
 )
 
@@ -32,15 +32,22 @@ func cleanImportSpec(spec *ast.ImportSpec) string {
 	return "<unknown>"
 }
 
+func candidatePaths(loadpath, parent string) []string {
+	const kVendor = "vendor"
+	paths := []string{}
+	for parent != "." && parent != "" {
+		paths = append(paths, path.Join(parent, kVendor, loadpath))
+		parent = path.Dir(parent)
+	}
+	paths = append(paths, loadpath)
+	return paths
+}
+
 // loadPackage recursively loads a Go package into the Package
 // Graph. If the package was already loaded, it returns early. It
 // always returns the Package object for the loaded package.
 func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *loader.PackageInfo) *Package {
-	if pi == nil {
-		// FIXME investigate this
-		fmt.Printf("??? No PackageInfo for loadpath=%s\n", loadpath)
-		return nil
-	}
+	log.Printf("Loading %s\n", loadpath)
 	if pkg, in := pg.Packages[loadpath]; in {
 		return pkg
 	}
@@ -63,7 +70,18 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 			// Find the import's load-path and load that
 			// package into the graph.
 			ipath := cleanImportSpec(imported)
-			i := prog.Package(ipath)
+			candidatePaths := candidatePaths(ipath, loadpath)
+			var i *loader.PackageInfo
+			for _, c := range candidatePaths {
+				i = prog.Package(c)
+				if i != nil {
+					ipath = c
+					break
+				}
+			}
+			if i == nil {
+				continue
+			}
 			importedPkg := pg.loadPackage(prog, ipath, i)
 
 			// Set up the edges on the package dependency graph
