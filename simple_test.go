@@ -1,6 +1,7 @@
-package goref
+package goref_test
 
 import (
+	"github.com/korfuri/goref"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -12,7 +13,7 @@ func TestSimplePackage(t *testing.T) {
 		filepath = "testdata/simple/main.go"
 	)
 
-	pg := NewPackageGraph()
+	pg := goref.NewPackageGraph()
 	pg.LoadProgram(pkgpath, filepath)
 	assert.Contains(t, pg.Packages, pkgpath)
 	assert.Contains(t, pg.Packages, "fmt")
@@ -26,7 +27,7 @@ func TestSimplePackage(t *testing.T) {
 		assert.Equal(t, 13, p.EndC)
 		assert.Contains(t, p.File, filepath)
 
-		assert.True(t, Call == r.RefType)
+		assert.True(t, goref.Call == r.RefType)
 		assert.Equal(t, r.Position.Line, 6)
 		assert.Equal(t, r.Position.Column, 6)
 		assert.Contains(t, r.Position.Filename, filepath)

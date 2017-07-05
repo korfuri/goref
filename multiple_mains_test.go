@@ -1,6 +1,7 @@
-package goref
+package goref_test
 
 import (
+	"github.com/korfuri/goref"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -12,7 +13,7 @@ func TestMultipleMains(t *testing.T) {
 		filebase = "testdata/multiple_mains/"
 	)
 
-	pg := NewPackageGraph()
+	pg := goref.NewPackageGraph()
 	pg.LoadProgram(pkgbase + "1/main", filebase + "1/main.go")
 	assert.Contains(t, pg.Packages, pkgbase + "1/main")
 	assert.Contains(t, pg.Packages, pkgbase + "common")
