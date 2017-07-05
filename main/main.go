@@ -4,9 +4,9 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/korfuri/goref"
 
-	"fmt"
 	"log"
 	"runtime"
+	"os"
 	"time"
 )
 
@@ -20,6 +20,9 @@ func reportMemory() {
 }
 
 func main() {
+	log.SetFlags(0)
+	log.SetOutput(os.Stdout)
+
 	reportMemory()
 
 	start := time.Now()
@@ -27,48 +30,66 @@ func main() {
 	m := goref.NewPackageGraph()
 	m.LoadProgram("github.com/korfuri/goref/main", "main.go")
 
-	fmt.Printf("Loading took %s\n", time.Since(start))
-
+	log.Printf("Loading took %s\n", time.Since(start))
 	reportMemory()
-
-	fmt.Printf("%d packages in the graph\n", len(m.Packages))
-	fmt.Printf("%d files in the graph\n", len(m.Files))
-
 	loadingDone := time.Now()
 
-	fmt.Printf("Packages that depend on `fmt`:\n")
+	m.ComputeInterfaceImplementationMatrix()
+	
+	log.Printf("Type matrix took %s (total runtime: %s)\n", time.Since(loadingDone), time.Since(start))
+	reportMemory()
+	computeMatrixDone := time.Now()
+	
+	log.Printf("%d packages in the graph\n", len(m.Packages))
+	log.Printf("%d files in the graph\n", len(m.Files))
+
+	log.Printf("Packages that depend on `fmt`:\n")
 	for d, _ := range m.Packages["fmt"].Dependents {
-		fmt.Printf("   - %s\n", d)
+		log.Printf("   - %s\n", d)
 	}
 
-	fmt.Printf("Packages that `goref` depends on:\n")
+	log.Printf("Packages that `goref` depends on:\n")
 	for d, _ := range m.Packages["github.com/korfuri/goref"].Dependencies {
-		fmt.Printf("   - %s\n", d)
+		log.Printf("   - %s\n", d)
 	}
 
-	fmt.Printf("Package `goref` has these files:\n")
+	log.Printf("Package `goref` has these files:\n")
 	for d, _ := range m.Packages["github.com/korfuri/goref"].Files {
-		fmt.Printf("   - %s\n", d)
+		log.Printf("   - %s\n", d)
 	}
 
-	fmt.Printf("Package `fmt` has these files:\n")
+	log.Printf("Package `fmt` has these files:\n")
 	for d, _ := range m.Packages["fmt"].Files {
-		fmt.Printf("   - %s\n", d)
+		log.Printf("   - %s\n", d)
 	}
 
-	fmt.Printf("Here are the uses of objects in `goref`:\n")
+	log.Printf("Here are the uses of objects in `goref`:\n")
 	for pos, ref := range m.Packages["github.com/korfuri/goref"].InRefs {
-		fmt.Printf("   - %s %s\n", pos, ref)
+		log.Printf("   - %s %s\n", pos, ref)
 	}
 
-	fmt.Printf("Here is where `goref`.`InRefs` is used:\n")
+	log.Printf("Here is where `goref`.`InRefs` is used:\n")
 	for pos, ref := range m.Packages["github.com/korfuri/goref"].InRefs {
 		if ref.Ident == "InRefs" {
-			fmt.Printf("   - %s\n", pos)
+			log.Printf("   - %s\n", pos)
 		}
 	}
 
-	fmt.Printf("Displaying took %s (total runtime: %s)\n", time.Since(loadingDone), time.Since(start))
+	log.Printf("Here are the uses of objects in `log` by `main`:\n")
+	for pos, ref := range m.Packages["log"].InRefs {
+		if ref.FromPackage == m.Packages["github.com/korfuri/goref/main"] {
+			log.Printf("   - %s %s\n", pos, ref)
+		}
+	}
+
+	log.Printf("Who implements `log.Stringer`?\n")
+	for pos, ref := range m.Packages["fmt"].InRefs {
+		if ref.Ident == "Stringer" && ref.RefType == goref.Implementation {
+			log.Printf("   - implemented at %s by %s\n", pos, ref)
+		}
+	}
+	
+	log.Printf("Displaying took %s (total runtime: %s)\n", time.Since(computeMatrixDone), time.Since(start))
 }
 
 func unused() interface{} {
@@ -76,3 +97,15 @@ func unused() interface{} {
 	log.Print(b)
 	return log.Fatalf
 }
+
+type UnusedI interface {
+	blah() string
+}
+
+type UnusedT int
+
+func (u UnusedT) blah() string {
+	return ""
+}
+
+type EmptyI interface{}

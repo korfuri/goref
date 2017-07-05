@@ -2,11 +2,10 @@ package goref
 
 import (
 	"go/ast"
-	"go/printer"
 	"go/token"
+	"go/types"
 	"golang.org/x/tools/go/loader"
 
-	"bytes"
 	"fmt"
 	"log"
 	"strings"
@@ -25,9 +24,8 @@ type PackageGraph struct {
 
 // Package represents a Go Package, including its dependencies.
 type Package struct {
-	// Refers to the PackageInfo object provided by `loader`
-	// during program loading.
-	//*loader.PackageInfo
+	// Name of the package
+	Name string
 
 	// Dependencies is the map of load-paths imported within this
 	// package to the corresponding Package objects.
@@ -41,13 +39,35 @@ type Package struct {
 	// Files is a map of paths to File objects that make up this package.
 	Files map[string]*File
 
-	// OutRefs is the map of token.Pos (position in the
-	// token.FileSet) to Ref objects.
-	OutRefs map[token.Pos]*Ref
+	// OutRefs and InRefs are maps of references from a Position
+	// (file:line:column). For OutRefs the Position is local to
+	// the package and the Ref is to an identifier in another
+	// package. For InRefs the Position is external to the package
+	// and the Ref is to an identifier within this package.
+	OutRefs map[Position]*Ref
+	InRefs  map[Position]*Ref
 
-	// InRefs is the map of token.Position (absolute position, as
-	// in, file:line:col) into this file.
-	InRefs map[token.Position]*Ref
+	// Interfaces is the list of interface types in this package.
+	//
+	// This is used to compute the interface-implementation matrix.
+	//
+	// Only named interfaces matter, because an unnamed interface
+	// can't be exported.
+	//
+	// Interfaces equivalent to interface{} are excluded.
+	Interfaces []*types.Named
+
+	// Impls is the list of non-interface types in this package.
+	//
+	// This is used to compute the interface-implementation matrix.
+	//
+	// Only named types matter, because an unnamed type can't have
+	// methods.
+	Impls []*types.Named
+
+	// Fset is a reference to the token.FileSet that loaded this
+	// package.
+	Fset *token.FileSet
 }
 
 // File represents a file that is part of a package loaded in a
@@ -68,6 +88,7 @@ type RefType int
 const (
 	Instantiation = iota
 	Call
+	Implementation
 	Reference
 )
 
@@ -77,10 +98,58 @@ func (rt RefType) String() string {
 		return "Instantiation"
 	case Call:
 		return "Call"
+	case Implementation:
+		return "Implementation"
 	case Reference:
 		return "Reference"
 	default:
 		panic("Unknown RefType used")
+	}
+}
+
+// A Position is similar to token.Position in that it gives an
+// absolute position within a file, but it may also denote the Pos +
+// End concept of token.Pos.
+//
+// The End is optional. If NoPos is used as the End, Position only
+// contains file:line:column.
+//
+// The Pos is not optional and must resolve to file:line:column.
+type Position struct {
+	File       string
+	PosL, PosC int
+	EndL, EndC int
+}
+
+func (p Position) String() string {
+	if p.EndL >= 0 {
+		return fmt.Sprintf("%s:[%d:%d]-[%d:%d]", p.File, p.PosL, p.PosC, p.EndL, p.EndC)
+	} else {
+		return fmt.Sprintf("%s:%d:%d", p.File, p.PosL, p.PosC)
+	}
+}
+
+func NewPosition(fset *token.FileSet, pos, end token.Pos) Position {
+	ppos := fset.Position(pos)
+	if end == token.NoPos {
+		return Position{
+			File: ppos.Filename,
+			PosL: ppos.Line,
+			PosC: ppos.Column,
+			EndL: -1,
+			EndC: -1,
+		}
+	}
+	pend := fset.Position(end)
+	if ppos.Filename != pend.Filename {
+		panic("Invalid pair of {pos,end} for NewPosition: pos and end come from different files!")
+	}
+	return Position{
+		File: ppos.Filename,
+		PosL: ppos.Line,
+		PosC: ppos.Column,
+		EndL: pend.Line,
+		EndC: pend.Column,
 	}
 }
 
@@ -90,34 +159,56 @@ type Ref struct {
 	// Type of reference
 	RefType
 
-	// Where this reference points to
-	// FIXME: inrefs should point to a Pos, or to an Identifier,
-	// not to a Position (so we can do inverse matching of "what
-	// points to this identifier?")
+	// Where this reference points from, i.e. where the identifier
+	// was used in another package.
 	token.Position
 
-	// What identifier this reference points to
+	// What identifier this reference points to, i.e. what
+	// identifier is referred to by another package. For most
+	// references the name in the other package is identical, but
+	// for Implementation references this is the name of the
+	// interface.
 	Ident string
+
+	// What package the identifier is in
+	ToPackage *Package
+
+	// What package the ref is from, i.e. what foreign package was
+	// this identifier used in.
+	FromPackage *Package
+}
+
+func (p *Package) String() string {
+	return p.Name
 }
 
 func (r *Ref) String() string {
-	return fmt.Sprintf("%s of `%s` at %s", r.RefType, r.Ident, r.Position)
+	return fmt.Sprintf("%s of `%s.%s` in %s at %s", r.RefType, r.ToPackage, r.Ident, r.FromPackage, r.Position)
 }
 
 func cleanImportSpec(spec *ast.ImportSpec) string {
-	s := spec.Path.Value
-	s = strings.Trim(s, "\"")
-	return s
+	// FIXME we should make sure we understand what can cause Path
+	// to be empty.
+	if spec.Path != nil {
+		s := spec.Path.Value
+		s = strings.Trim(s, "\"")
+		return s
+	}
+	return "<unknown>"
 }
 
-func newPackage(pi *loader.PackageInfo) *Package {
+func newPackage(pi *loader.PackageInfo, fset *token.FileSet) *Package {
 	return &Package{
 		//PackageInfo:  pi,
+		Name:         pi.Pkg.Name(),
 		Dependencies: make(map[string]*Package),
 		Dependents:   make(map[string]*Package),
 		Files:        make(map[string]*File),
-		OutRefs:      make(map[token.Pos]*Ref),
-		InRefs:       make(map[token.Position]*Ref),
+		OutRefs:      make(map[Position]*Ref),
+		InRefs:       make(map[Position]*Ref),
+		Interfaces:   make([]*types.Named, 0),
+		Impls:        make([]*types.Named, 0),
+		Fset:         fset,
 	}
 }
 
@@ -128,17 +219,18 @@ func newFile(fset *token.FileSet) *File {
 	}
 }
 
-var FIXME *token.FileSet
-
 // loadPackage recursively loads a Go package into the Package
 // Graph. If the package was already loaded, it returns early. It
 // always returns the Package object for the loaded package.
 func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *loader.PackageInfo) *Package {
-	FIXME = prog.Fset
+	if pi == nil {
+		fmt.Printf("??? No PackageInfo for loadpath=%s\n", loadpath)
+		return nil
+	}
 	if pkg, in := pg.Packages[loadpath]; in {
 		return pkg
 	}
-	pkg := newPackage(pi)
+	pkg := newPackage(pi, prog.Fset)
 	pg.Packages[loadpath] = pkg
 
 	// Iterate over all files in that package.
@@ -174,56 +266,42 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 			pkgLoadPath := obj.Pkg().Path()
 			if pkgLoadPath != loadpath {
 				foreignPkg := pg.Packages[pkgLoadPath]
-				ref := &Ref{
-					RefType:  refTypeForId(prog, id),
-					Position: prog.Fset.Position(id.Pos()),
-					Ident:    obj.Name(),
+				if foreignPkg != nil {
+					ref := &Ref{
+						RefType:     refTypeForId(prog, id),
+						Position:    prog.Fset.Position(id.Pos()),
+						Ident:       obj.Name(),
+						ToPackage:   foreignPkg,
+						FromPackage: pkg,
+					}
+
+					refpos := NewPosition(prog.Fset, id.Pos(), id.End())
+					foreignPkg.InRefs[refpos] = ref
+					pkg.OutRefs[refpos] = ref
 				}
+			}
+		}
+	}
 
-				// // Walk the file's AST to find OutRefs and index those.
-				// ast.Inspect(f, func(n ast.Node) bool {
-				// 	switch n := n.(type) {
-				// 	case *ast.CallExpr:
-				// 		f := n.Fun
-				// 		fmt.Printf("Call: %s, Fun has type: %s ", n, reflect.TypeOf(f))
-				// 		switch f := f.(type) {
-				// 		case *ast.SelectorExpr:
-				// 			fmt.Printf("and value  %s [.] %s\n", f.Sel, f.X)
-				// 		}
-				// 	}
-				// 	return true
-				// })
-
-				// FIXME: this pulls the foreign package's
-				// object's Position from the current
-				// package's Fileset. This will not work if
-				// both packages were loaded as part of 2
-				// different programs (which may happen as
-				// packages only get loaded once).
-				foreignPkg.InRefs[prog.Fset.Position(obj.Pos())] = ref
-				pkg.OutRefs[id.Pos()] = ref
+	// Iterate over all types in that package and insert them as
+	// needed into Structs and Interfaces.
+	for _, name := range pi.Pkg.Scope().Names() {
+		if obj, ok := pi.Pkg.Scope().Lookup(name).(*types.TypeName); ok {
+			if named, ok := obj.Type().(*types.Named); ok {
+				if types.IsInterface(named) {
+					i := named.Obj().Type().Underlying().(*types.Interface)
+					// We only care about interfaces that are exported, and that are not interface{}.
+					if named.Obj().Exported() && i.NumMethods() > 0 {
+						pkg.Interfaces = append(pkg.Interfaces, named)
+					}
+				} else {
+					pkg.Impls = append(pkg.Impls, named)
+				}
 			}
 		}
 	}
 
 	return pkg
-}
-
-func prettyAST(n interface{}) {
-	// Print the function body into buffer buf.
-	// The file set is provided to the printer so that it knows
-	// about the original source formatting and can add additional
-	// line breaks where they were present in the source.
-	var buf bytes.Buffer
-	printer.Fprint(&buf, FIXME, n)
-
-	// Remove braces {} enclosing the function body, unindent,
-	// and trim leading and trailing white space.
-	s := buf.String()
-	s = strings.TrimSpace(strings.Replace(s, "\n\t", "\n", -1))
-
-	// Print the cleaned-up body text to stdout.
-	fmt.Println(s)
 }
 
 func refTypeForId(prog *loader.Program, id *ast.Ident) RefType {
@@ -233,20 +311,26 @@ func refTypeForId(prog *loader.Program, id *ast.Ident) RefType {
 		//fmt.Printf("Id: %s, Node: %v\n", id.Name, n)
 		switch n := n.(type) {
 		case *ast.CallExpr:
+			// If this identifier appears in a CallExpr,
+			// we make sure it appears as the function as
+			// part of a SelectorExpr (because it will be
+			// of the form package.Function(args).
 			switch f := n.Fun.(type) {
 			case *ast.SelectorExpr:
-				if f.Sel.Obj == id.Obj {
-					if id.Name == "Files" {
-						fmt.Printf("Call. Fun is %s\n", n.Fun)
-						prettyAST(n)
-					}
+				if f.Sel == id {
 					return Call
 				}
 			}
 		case *ast.CompositeLit:
-			switch n.Type.(type) {
+			// A CompositeLit is an expression of the form
+			// Type{...}. We check that the Type is a
+			// SelectorExpr because we are looking for
+			// package.Type{...}.
+			switch t := n.Type.(type) {
 			case *ast.SelectorExpr:
-				return Instantiation
+				if t.Sel == id {
+					return Instantiation
+				}
 			}
 		}
 	}
@@ -267,6 +351,33 @@ func (p *PackageGraph) LoadProgram(loadpath string, filename string) {
 
 	for k, v := range prog.AllPackages {
 		p.loadPackage(prog, k.Path(), v)
+	}
+}
+
+func (p *PackageGraph) ComputeInterfaceImplementationMatrix() {
+	for _, pa := range p.Packages {
+		for _, iface := range pa.Interfaces {
+			for _, pb := range p.Packages {
+				for _, typ := range pb.Impls {
+					if typ == iface {
+						continue
+					}
+					if types.AssignableTo(typ, iface) {
+						fset := pb.Fset
+						pos := NewPosition(fset, typ.Obj().Pos(), token.NoPos)
+						r := &Ref{
+							RefType:     Implementation,
+							Position:    fset.Position(typ.Obj().Pos()),
+							Ident:       iface.Obj().Name(),
+							ToPackage:   pa,
+							FromPackage: pb,
+						}
+						pa.InRefs[pos] = r
+						pb.OutRefs[pos] = r
+					}
+				}
+			}
+		}
 	}
 }
 
