@@ -5,8 +5,8 @@ import (
 	"github.com/korfuri/goref"
 
 	"log"
-	"runtime"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -35,11 +35,11 @@ func main() {
 	loadingDone := time.Now()
 
 	m.ComputeInterfaceImplementationMatrix()
-	
+
 	log.Printf("Type matrix took %s (total runtime: %s)\n", time.Since(loadingDone), time.Since(start))
 	reportMemory()
 	computeMatrixDone := time.Now()
-	
+
 	log.Printf("%d packages in the graph\n", len(m.Packages))
 	log.Printf("%d files in the graph\n", len(m.Files))
 
@@ -88,7 +88,7 @@ func main() {
 			log.Printf("   - implemented at %s by %s\n", pos, ref)
 		}
 	}
-	
+
 	log.Printf("Displaying took %s (total runtime: %s)\n", time.Since(computeMatrixDone), time.Since(start))
 }
 
