@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/korfuri/codesearch/indexing/goref"
+	"github.com/korfuri/goref"
 
 	"fmt"
 	"log"
@@ -20,12 +20,12 @@ func main() {
 	}
 	
 	fmt.Printf("Packages that `goref` depends on:\n")
-	for d, _ := range m.Packages["github.com/korfuri/codesearch/indexing/goref"].Dependencies {
+	for d, _ := range m.Packages["github.com/korfuri/goref"].Dependencies {
 		fmt.Printf("   - %s\n", d)
 	}
 
 	fmt.Printf("Package `goref` has these files:\n")
-	for d, _ := range m.Packages["github.com/korfuri/codesearch/indexing/goref"].Files {
+	for d, _ := range m.Packages["github.com/korfuri/goref"].Files {
 		fmt.Printf("   - %s\n", d)
 	}
 
