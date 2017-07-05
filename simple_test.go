@@ -9,8 +9,8 @@ import (
 
 func TestSimplePackage(t *testing.T) {
 	const (
-		pkgpath = "github.com/korfuri/goref/testdata/simple/main"
-		filepath = "testdata/simple/main.go"
+		pkgpath = "github.com/korfuri/goref/testprograms/simple/main"
+		filepath = "testprograms/simple/main.go"
 	)
 
 	pg := goref.NewPackageGraph()

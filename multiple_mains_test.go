@@ -9,8 +9,8 @@ import (
 
 func TestMultipleMains(t *testing.T) {
 	const (
-		pkgbase = "github.com/korfuri/goref/testdata/multiple_mains/"
-		filebase = "testdata/multiple_mains/"
+		pkgbase = "github.com/korfuri/goref/testprograms/multiple_mains/"
+		filebase = "testprograms/multiple_mains/"
 	)
 
 	pg := goref.NewPackageGraph()

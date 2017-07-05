@@ -1,0 +1,3 @@
+package somedep
+
+func Fun() {}
