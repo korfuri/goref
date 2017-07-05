@@ -2,9 +2,11 @@ package goref
 
 import (
 	"go/ast"
+	"go/printer"
 	"go/token"
 	"golang.org/x/tools/go/loader"
 
+	"bytes"
 	"fmt"
 	"log"
 	"strings"
@@ -126,10 +128,13 @@ func newFile(fset *token.FileSet) *File {
 	}
 }
 
+var FIXME *token.FileSet
+
 // loadPackage recursively loads a Go package into the Package
 // Graph. If the package was already loaded, it returns early. It
 // always returns the Package object for the loaded package.
 func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *loader.PackageInfo) *Package {
+	FIXME = prog.Fset
 	if pkg, in := pg.Packages[loadpath]; in {
 		return pkg
 	}
@@ -204,6 +209,23 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 	return pkg
 }
 
+func prettyAST(n interface{}) {
+	// Print the function body into buffer buf.
+	// The file set is provided to the printer so that it knows
+	// about the original source formatting and can add additional
+	// line breaks where they were present in the source.
+	var buf bytes.Buffer
+	printer.Fprint(&buf, FIXME, n)
+
+	// Remove braces {} enclosing the function body, unindent,
+	// and trim leading and trailing white space.
+	s := buf.String()
+	s = strings.TrimSpace(strings.Replace(s, "\n\t", "\n", -1))
+
+	// Print the cleaned-up body text to stdout.
+	fmt.Println(s)
+}
+
 func refTypeForId(prog *loader.Program, id *ast.Ident) RefType {
 	_, path, _ := prog.PathEnclosingInterval(id.Pos(), id.End())
 	// Walk the file's AST to find OutRefs and index those.
@@ -211,9 +233,15 @@ func refTypeForId(prog *loader.Program, id *ast.Ident) RefType {
 		//fmt.Printf("Id: %s, Node: %v\n", id.Name, n)
 		switch n := n.(type) {
 		case *ast.CallExpr:
-			switch n.Fun.(type) {
+			switch f := n.Fun.(type) {
 			case *ast.SelectorExpr:
-				return Call
+				if f.Sel.Obj == id.Obj {
+					if id.Name == "Files" {
+						fmt.Printf("Call. Fun is %s\n", n.Fun)
+						prettyAST(n)
+					}
+					return Call
+				}
 			}
 		case *ast.CompositeLit:
 			switch n.Type.(type) {
