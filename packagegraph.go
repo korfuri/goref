@@ -100,11 +100,13 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 				foreignPkg := pg.Packages[pkgLoadPath]
 				if foreignPkg != nil {
 					ref := &Ref{
-						RefType:     refTypeForId(prog, id),
-						Position:    prog.Fset.Position(id.Pos()),
-						Ident:       obj.Name(),
-						ToPackage:   foreignPkg,
-						FromPackage: pkg,
+						RefType:      refTypeForId(prog, id),
+						ToIdent:      obj.Name(),
+						ToPackage:    foreignPkg,
+						ToPosition:   NewPosition(prog.Fset, obj.Pos(), NoPos),
+						FromIdent:    id.Name,
+						FromPackage:  pkg,
+						FromPosition: NewPosition(prog.Fset, id.Pos(), id.End()),
 					}
 
 					refpos := NewPosition(prog.Fset, id.Pos(), id.End())
@@ -165,11 +167,34 @@ func (p *PackageGraph) ComputeInterfaceImplementationMatrix() {
 						fset := pb.Fset
 						pos := NewPosition(fset, typ.Obj().Pos(), token.NoPos)
 						r := &Ref{
-							RefType:     Implementation,
-							Position:    fset.Position(typ.Obj().Pos()),
-							Ident:       iface.Obj().Name(),
-							ToPackage:   pa,
-							FromPackage: pb,
+							RefType:      Implementation,
+							ToIdent:      iface.Obj().Name(),
+							ToPackage:    pa,
+							ToPosition:   NewPosition(fset, iface.Obj().Pos(), NoPos),
+							FromIdent:    typ.Obj().Name(),
+							FromPackage:  pb,
+							FromPosition: NewPosition(fset, typ.Obj().Pos(), NoPos),
+						}
+						pa.InRefs[pos] = r
+						pb.OutRefs[pos] = r
+					}
+				}
+				for _, ifaceb := range pb.Interfaces {
+					if ifaceb == iface {
+						continue
+					}
+					if types.AssignableTo(ifaceb, iface) {
+						fset := pb.Fset
+						pos := NewPosition(fset, ifaceb.Obj().Pos(), token.NoPos)
+						r := &Ref{
+							RefType:    Extension,
+							ToIdent:    iface.Obj().Name(),
+							ToPackage:  pa,
+							ToPosition: NewPosition(fset, ifaceb.Obj().Pos(), NoPos),
+
+							FromIdent:    ifaceb.Obj().Name(),
+							FromPackage:  pb,
+							FromPosition: NewPosition(fset, ifaceb.Obj().Pos(), NoPos),
 						}
 						pa.InRefs[pos] = r
 						pb.OutRefs[pos] = r

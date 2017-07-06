@@ -13,16 +13,19 @@ type Ref struct {
 
 	// Where this reference points from, i.e. where the identifier
 	// was used in another package.
-	token.Position
+	FromPosition Position
 
-	// What identifier this reference points to, i.e. what
-	// identifier is referred to by another package. For most
-	// references the name in the other package is identical, but
-	// for Implementation references this is the name of the
-	// interface.
-	Ident string
+	// Where this reference points to, i.e. where the definition
+	// is
+	ToPosition Position
+	
+	// What identifier points to this Ref
+	FromIdent string
 
-	// What package the identifier is in
+	// What identifier this Ref points to
+	ToIdent string
+
+	// What package contains what the identifier refers to
 	ToPackage *Package
 
 	// What package the ref is from, i.e. what foreign package was
@@ -31,5 +34,5 @@ type Ref struct {
 }
 
 func (r *Ref) String() string {
-	return fmt.Sprintf("%s of `%s.%s` in %s at %s", r.RefType, r.ToPackage, r.Ident, r.FromPackage, r.Position)
+	return fmt.Sprintf("%s of to:`%s.%s` at %s by from:`%s.%s` at %s", r.RefType, r.ToPackage, r.ToIdent, r.ToPosition, r.FromPackage, r.FromIdent, r.FromPosition)
 }

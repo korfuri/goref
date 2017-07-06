@@ -69,7 +69,7 @@ func main() {
 
 	log.Printf("Here is where `goref`.`InRefs` is used:\n")
 	for pos, ref := range m.Packages["github.com/korfuri/goref"].InRefs {
-		if ref.Ident == "InRefs" {
+		if ref.ToIdent == "InRefs" {
 			log.Printf("   - %s\n", pos)
 		}
 	}
@@ -83,7 +83,7 @@ func main() {
 
 	log.Printf("Who implements `log.Stringer`?\n")
 	for pos, ref := range m.Packages["fmt"].InRefs {
-		if ref.Ident == "Stringer" && ref.RefType == goref.Implementation {
+		if ref.ToIdent == "Stringer" && ref.RefType == goref.Implementation {
 			log.Printf("   - implemented at %s by %s\n", pos, ref)
 		}
 	}

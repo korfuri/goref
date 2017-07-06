@@ -28,10 +28,10 @@ func TestSimplePackage(t *testing.T) {
 		assert.Contains(t, p.File, filepath)
 
 		assert.True(t, goref.Call == r.RefType)
-		assert.Equal(t, r.Position.Line, 6)
-		assert.Equal(t, r.Position.Column, 6)
-		assert.Contains(t, r.Position.Filename, filepath)
-		assert.Equal(t, "Println", r.Ident)
+		assert.Equal(t, r.FromPosition.PosL, 6)
+		assert.Equal(t, r.FromPosition.PosC, 6)
+		assert.Contains(t, r.FromPosition.File, filepath)
+		assert.Equal(t, "Println", r.ToIdent)
 		assert.Equal(t, pg.Packages["fmt"], r.ToPackage)
 		assert.Equal(t, pkg, r.FromPackage)
 	}

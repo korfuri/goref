@@ -14,6 +14,7 @@ const (
 	Instantiation = iota
 	Call
 	Implementation
+	Extension
 	Reference
 )
 
@@ -25,6 +26,8 @@ func (rt RefType) String() string {
 		return "Call"
 	case Implementation:
 		return "Implementation"
+	case Extension:
+		return "Extension"
 	case Reference:
 		return "Reference"
 	default:
