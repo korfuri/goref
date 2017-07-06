@@ -1,11 +1,11 @@
 package goref
 
 import (
+	log "github.com/sirupsen/logrus"
 	"go/ast"
 	"go/token"
 	"go/types"
 	"golang.org/x/tools/go/loader"
-	"log"
 	"path"
 	"strings"
 )
@@ -21,6 +21,8 @@ type PackageGraph struct {
 	Files map[string]*File
 }
 
+// cleanImportSpec takes an ast.ImportSpec and cleans the Path
+// component by trimming the quotes (") that surround it.
 func cleanImportSpec(spec *ast.ImportSpec) string {
 	// FIXME we should make sure we understand what can cause Path
 	// to be empty.
@@ -32,6 +34,22 @@ func cleanImportSpec(spec *ast.ImportSpec) string {
 	return "<unknown>"
 }
 
+// candidatePaths returns a slice enumerating all the possible import
+// paths for a package. This means inserting the possible "vendor"
+// directory location from the load path of the importing package.
+//
+// If package a/b imports c/d, the following paths are candidates:
+// a/b/vendor/c/d
+// a/vendor/c/d
+// vendor/c/d
+// c/d
+//
+// Order matters, as the most-specific vendored package is selected.
+// Note that multi-level vendoring works, as PackageGraph will
+// consider the full import path, including path/to/vendor/, as the
+// package path when building the graph. In this sense we follow the
+// go tool's convention to not try to detect when two packages loaded
+// through different paths are the same package.
 func candidatePaths(loadpath, parent string) []string {
 	const kVendor = "vendor"
 	paths := []string{}
@@ -39,6 +57,14 @@ func candidatePaths(loadpath, parent string) []string {
 		paths = append(paths, path.Join(parent, kVendor, loadpath))
 		parent = path.Dir(parent)
 	}
+	// Some dependencies may be vendored under
+	// $GOROOT/src/vendor. This is the case e.g. for
+	// `golang_org/x/net/lex/httplex` which is imported by
+	// `net/http`. This is the correct path: it's just vendored
+	// that way in the standard library. See
+	// https://github.com/golang/go/issues/16333 for background on
+	// that.
+	paths = append(paths, path.Join(kVendor, loadpath))
 	paths = append(paths, loadpath)
 	return paths
 }
@@ -47,7 +73,6 @@ func candidatePaths(loadpath, parent string) []string {
 // Graph. If the package was already loaded, it returns early. It
 // always returns the Package object for the loaded package.
 func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *loader.PackageInfo) *Package {
-	log.Printf("Loading %s\n", loadpath)
 	if pkg, in := pg.Packages[loadpath]; in {
 		return pkg
 	}
@@ -80,6 +105,7 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 				}
 			}
 			if i == nil {
+				log.Warnf("Tried to load package `%s` imported by package `%s` but it wasn't found anywhere in the load path. The candidate load paths were: %s\n", ipath, loadpath, candidatePaths)
 				continue
 			}
 			importedPkg := pg.loadPackage(prog, ipath, i)
