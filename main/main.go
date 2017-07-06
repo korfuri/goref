@@ -13,10 +13,9 @@ import (
 func reportMemory() {
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
-	log.Printf("Allocated memory: %s\n", humanize.Bytes(mem.Alloc))
-	log.Printf("Total allocated memory: %s\n", humanize.Bytes(mem.TotalAlloc))
-	log.Printf("Heap allocated memory: %s\n", humanize.Bytes(mem.HeapAlloc))
-	log.Printf("System heap allocated memory: %s\n", humanize.Bytes(mem.HeapSys))
+	log.Printf("Memory stats: Alloc:%s, TotalAlloc:%s, HeapAlloc:%s, HeapSys:%s\n",
+		humanize.Bytes(mem.Alloc), humanize.Bytes(mem.TotalAlloc),
+		humanize.Bytes(mem.HeapAlloc), humanize.Bytes(mem.HeapSys))
 }
 
 func main() {
