@@ -2,7 +2,6 @@ package goref
 
 import (
 	"fmt"
-	"go/token"
 )
 
 // A Ref is a reference to an identifier whose definition lives in

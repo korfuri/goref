@@ -19,9 +19,16 @@ type Position struct {
 	EndL, EndC int
 }
 
+const (
+	NoPos = token.NoPos
+)
+
 func (p Position) String() string {
+	if p == (Position{}) {
+		return "-"
+	}
 	if p.EndL >= 0 {
-		return fmt.Sprintf("%s:[%d:%d]-[%d:%d]", p.File, p.PosL, p.PosC, p.EndL, p.EndC)
+		return fmt.Sprintf("%s:%d:%d-%d:%d", p.File, p.PosL, p.PosC, p.EndL, p.EndC)
 	} else {
 		return fmt.Sprintf("%s:%d:%d", p.File, p.PosL, p.PosC)
 	}
