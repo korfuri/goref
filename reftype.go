@@ -51,6 +51,13 @@ func refTypeForId(prog *loader.Program, id *ast.Ident) RefType {
 				if f.Sel == id {
 					return Call
 				}
+			case *ast.Ident:
+				// It's possible that Foo() refers to
+				// an imported identifier, in the case
+				// of dot imports.
+				if f == id {
+					return Call
+				}
 			}
 		case *ast.CompositeLit:
 			// A CompositeLit is an expression of the form
@@ -61,6 +68,13 @@ func refTypeForId(prog *loader.Program, id *ast.Ident) RefType {
 			case *ast.SelectorExpr:
 				if t.Sel == id {
 					return Instantiation
+				}
+			case *ast.Ident:
+				// It's possible that Foo{} refers to
+				// an imported identifier, in the case
+				// of dot imports.
+				if t == id {
+					return Call
 				}
 			}
 		}
