@@ -19,20 +19,19 @@ func TestSimplePackage(t *testing.T) {
 	pkg := pg.Packages[pkgpath]
 	assert.Empty(t, pkg.InRefs)
 	assert.Len(t, pkg.OutRefs, 1)
-	for _, r := range pkg.OutRefs {
-		p := r.FromPosition
-		assert.Equal(t, 6, p.PosL)
-		assert.Equal(t, 6, p.PosC)
-		assert.Equal(t, 6, p.EndL)
-		assert.Equal(t, 13, p.EndC)
-		assert.Contains(t, p.File, filepath)
+	r := pkg.OutRefs[0]
+	p := r.FromPosition
+	assert.Equal(t, 6, p.PosL)
+	assert.Equal(t, 6, p.PosC)
+	assert.Equal(t, 6, p.EndL)
+	assert.Equal(t, 13, p.EndC)
+	assert.Contains(t, p.File, filepath)
 
-		assert.True(t, goref.Call == r.RefType)
-		assert.Equal(t, r.FromPosition.PosL, 6)
-		assert.Equal(t, r.FromPosition.PosC, 6)
-		assert.Contains(t, r.FromPosition.File, filepath)
-		assert.Equal(t, "Println", r.ToIdent)
-		assert.Equal(t, pg.Packages["fmt"], r.ToPackage)
-		assert.Equal(t, pkg, r.FromPackage)
-	}
+	assert.True(t, goref.Call == r.RefType)
+	assert.Equal(t, r.FromPosition.PosL, 6)
+	assert.Equal(t, r.FromPosition.PosC, 6)
+	assert.Contains(t, r.FromPosition.File, filepath)
+	assert.Equal(t, "Println", r.ToIdent)
+	assert.Equal(t, pg.Packages["fmt"], r.ToPackage)
+	assert.Equal(t, pkg, r.FromPackage)
 }
