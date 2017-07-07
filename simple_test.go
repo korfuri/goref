@@ -6,10 +6,9 @@ import (
 	"testing"
 )
 
-
 func TestSimplePackage(t *testing.T) {
 	const (
-		pkgpath = "github.com/korfuri/goref/testprograms/simple/main"
+		pkgpath  = "github.com/korfuri/goref/testprograms/simple/main"
 		filepath = "testprograms/simple/main.go"
 	)
 
@@ -20,7 +19,8 @@ func TestSimplePackage(t *testing.T) {
 	pkg := pg.Packages[pkgpath]
 	assert.Empty(t, pkg.InRefs)
 	assert.Len(t, pkg.OutRefs, 1)
-	for p, r := range pkg.OutRefs {
+	for _, r := range pkg.OutRefs {
+		p := r.FromPosition
 		assert.Equal(t, 6, p.PosL)
 		assert.Equal(t, 6, p.PosC)
 		assert.Equal(t, 6, p.EndL)

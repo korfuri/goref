@@ -3,7 +3,6 @@ package goref
 import (
 	log "github.com/sirupsen/logrus"
 	"go/ast"
-	"go/token"
 	"go/types"
 	"golang.org/x/tools/go/loader"
 	"path"
@@ -135,9 +134,8 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 						FromPosition: NewPosition(prog.Fset, id.Pos(), id.End()),
 					}
 
-					refpos := NewPosition(prog.Fset, id.Pos(), id.End())
-					foreignPkg.InRefs[refpos] = ref
-					pkg.OutRefs[refpos] = ref
+					foreignPkg.InRefs = append(foreignPkg.InRefs, ref)
+					pkg.OutRefs = append(pkg.OutRefs, ref)
 				}
 			}
 		}
@@ -191,7 +189,6 @@ func (p *PackageGraph) ComputeInterfaceImplementationMatrix() {
 					}
 					if types.AssignableTo(typ, iface) {
 						fset := pb.Fset
-						pos := NewPosition(fset, typ.Obj().Pos(), token.NoPos)
 						r := &Ref{
 							RefType:      Implementation,
 							ToIdent:      iface.Obj().Name(),
@@ -201,8 +198,8 @@ func (p *PackageGraph) ComputeInterfaceImplementationMatrix() {
 							FromPackage:  pb,
 							FromPosition: NewPosition(fset, typ.Obj().Pos(), NoPos),
 						}
-						pa.InRefs[pos] = r
-						pb.OutRefs[pos] = r
+						pa.InRefs = append(pa.InRefs, r)
+						pb.OutRefs = append(pb.OutRefs, r)
 					}
 				}
 				for _, ifaceb := range pb.Interfaces {
@@ -211,7 +208,6 @@ func (p *PackageGraph) ComputeInterfaceImplementationMatrix() {
 					}
 					if types.AssignableTo(ifaceb, iface) {
 						fset := pb.Fset
-						pos := NewPosition(fset, ifaceb.Obj().Pos(), token.NoPos)
 						r := &Ref{
 							RefType:    Extension,
 							ToIdent:    iface.Obj().Name(),
@@ -222,8 +218,8 @@ func (p *PackageGraph) ComputeInterfaceImplementationMatrix() {
 							FromPackage:  pb,
 							FromPosition: NewPosition(fset, ifaceb.Obj().Pos(), NoPos),
 						}
-						pa.InRefs[pos] = r
-						pb.OutRefs[pos] = r
+						pa.InRefs = append(pa.InRefs, r)
+						pb.OutRefs = append(pb.OutRefs, r)
 					}
 				}
 			}

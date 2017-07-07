@@ -17,7 +17,7 @@ type Ref struct {
 	// Where this reference points to, i.e. where the definition
 	// is
 	ToPosition Position
-	
+
 	// What identifier points to this Ref
 	FromIdent string
 

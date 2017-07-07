@@ -23,13 +23,15 @@ type Package struct {
 	// Files is a map of paths to File objects that make up this package.
 	Files map[string]*File
 
-	// OutRefs and InRefs are maps of references from a Position
-	// (file:line:column). For OutRefs the Position is local to
-	// the package and the Ref is to an identifier in another
-	// package. For InRefs the Position is external to the package
-	// and the Ref is to an identifier within this package.
-	OutRefs map[Position]*Ref
-	InRefs  map[Position]*Ref
+	// OutRefs and InRefs are slices of references. For OutRefs
+	// the Ref is to an identifier in another package. For InRefs
+	// the Ref is to an identifier within this package.  Most
+	// RefTypes are not indexed if the ToPackage and the
+	// FromPackage are the same, but some do such as
+	// Implementation. This means that a ref can exist in both
+	// OutRefs and InRefs of the same package.
+	OutRefs []*Ref
+	InRefs  []*Ref
 
 	// Interfaces is the list of interface types in this package.
 	//
@@ -65,8 +67,8 @@ func newPackage(pi *loader.PackageInfo, fset *token.FileSet) *Package {
 		Dependencies: make(map[string]*Package),
 		Dependents:   make(map[string]*Package),
 		Files:        make(map[string]*File),
-		OutRefs:      make(map[Position]*Ref),
-		InRefs:       make(map[Position]*Ref),
+		OutRefs:      make([]*Ref, 0),
+		InRefs:       make([]*Ref, 0),
 		Interfaces:   make([]*types.Named, 0),
 		Impls:        make([]*types.Named, 0),
 		Fset:         fset,
