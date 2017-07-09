@@ -14,7 +14,7 @@ func TestInterfaceImplMatrix(t *testing.T) {
 		filepath = "testprograms/interfaces/main.go"
 	)
 
-	pg := goref.NewPackageGraph()
+	pg := goref.NewPackageGraph(0)
 	pg.LoadProgram(pkgpath, []string{filepath})
 	assert.Contains(t, pg.Packages, pkgpath)
 	pg.ComputeInterfaceImplementationMatrix()

@@ -13,7 +13,7 @@ func TestMultipleMains(t *testing.T) {
 		filebase = "testprograms/multiple_mains/"
 	)
 
-	pg := goref.NewPackageGraph()
+	pg := goref.NewPackageGraph(0)
 	pg.LoadProgram(pkgbase+"1/main", []string{filebase + "1/main.go"})
 	assert.Contains(t, pg.Packages, pkgbase+"1/main")
 	assert.Contains(t, pg.Packages, pkgbase+"common")

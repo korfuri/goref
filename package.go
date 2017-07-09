@@ -46,13 +46,19 @@ type Package struct {
 	// Fset is a reference to the token.FileSet that loaded this
 	// package.
 	Fset *token.FileSet
+
+	// Version is the version of the package that was loaded.
+	Version int64
+
+	// Path is the package's load path
+	Path string
 }
 
 func (p *Package) String() string {
 	return p.Name
 }
 
-func newPackage(pi *loader.PackageInfo, fset *token.FileSet) *Package {
+func newPackage(pi *loader.PackageInfo, fset *token.FileSet, version int64) *Package {
 	return &Package{
 		//PackageInfo:  pi,
 		Name:       pi.Pkg.Name(),
@@ -62,5 +68,7 @@ func newPackage(pi *loader.PackageInfo, fset *token.FileSet) *Package {
 		Interfaces: make([]*types.Named, 0),
 		Impls:      make([]*types.Named, 0),
 		Fset:       fset,
+		Version:    version,
+		Path:       pi.Pkg.Path(),
 	}
 }

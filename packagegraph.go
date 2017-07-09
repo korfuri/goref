@@ -15,10 +15,15 @@ import (
 // PackageGraph are also part of the PackageGraph.
 type PackageGraph struct {
 	// Map of package load-path to Package objects.
-	Packages map[string]*Package
+	Packages map[string]*Package `json:packages`
 
 	// Map of file path to File objects.
 	Files map[string]*File
+
+	// version is passed to all packages loaded in this
+	// graph. This assumes that all packages we'll load are loaded
+	// from the same snapshot of the Go universe.
+	version int64
 }
 
 // CleanImportSpec takes an ast.ImportSpec and cleans the Path
@@ -76,7 +81,7 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 	if pkg, in := pg.Packages[loadpath]; in {
 		return pkg
 	}
-	pkg := newPackage(pi, prog.Fset)
+	pkg := newPackage(pi, prog.Fset, pg.version)
 	pg.Packages[loadpath] = pkg
 
 	// Iterate over all files in that package.
@@ -259,9 +264,10 @@ func (pg *PackageGraph) ComputeInterfaceImplementationMatrix() {
 }
 
 // NewPackageGraph returns a new, empty PackageGraph.
-func NewPackageGraph() *PackageGraph {
+func NewPackageGraph(version int64) *PackageGraph {
 	return &PackageGraph{
 		Packages: make(map[string]*Package),
 		Files:    make(map[string]*File),
+		version:  version,
 	}
 }
