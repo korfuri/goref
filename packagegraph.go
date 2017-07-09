@@ -51,10 +51,10 @@ func cleanImportSpec(spec *ast.ImportSpec) string {
 // go tool's convention to not try to detect when two packages loaded
 // through different paths are the same package.
 func candidatePaths(loadpath, parent string) []string {
-	const kVendor = "vendor"
+	const vendor = "vendor"
 	paths := []string{}
 	for parent != "." && parent != "" {
-		paths = append(paths, path.Join(parent, kVendor, loadpath))
+		paths = append(paths, path.Join(parent, vendor, loadpath))
 		parent = path.Dir(parent)
 	}
 	// Some dependencies may be vendored under
@@ -64,7 +64,7 @@ func candidatePaths(loadpath, parent string) []string {
 	// that way in the standard library. See
 	// https://github.com/golang/go/issues/16333 for background on
 	// that.
-	paths = append(paths, path.Join(kVendor, loadpath))
+	paths = append(paths, path.Join(vendor, loadpath))
 	paths = append(paths, loadpath)
 	return paths
 }
@@ -126,7 +126,7 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 				foreignPkg := pg.Packages[pkgLoadPath]
 				if foreignPkg != nil {
 					ref := &Ref{
-						RefType:      refTypeForId(prog, id),
+						RefType:      refTypeForIdent(prog, id),
 						ToIdent:      obj.Name(),
 						ToPackage:    foreignPkg,
 						ToPosition:   NewPosition(prog.Fset, obj.Pos(), NoPos),
@@ -166,7 +166,7 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 // LoadProgram loads recursively packages used from a `main` package.
 // It may be called multiple times to load multiple programs'
 // package sets in the PackageGraph.
-func (p *PackageGraph) LoadProgram(loadpath string, filenames []string) {
+func (pg *PackageGraph) LoadProgram(loadpath string, filenames []string) {
 	conf := loader.Config{}
 	conf.CreateFromFilenames(loadpath, filenames...)
 
@@ -176,14 +176,17 @@ func (p *PackageGraph) LoadProgram(loadpath string, filenames []string) {
 	}
 
 	for k, v := range prog.AllPackages {
-		p.loadPackage(prog, k.Path(), v)
+		pg.loadPackage(prog, k.Path(), v)
 	}
 }
 
-func (p *PackageGraph) ComputeInterfaceImplementationMatrix() {
-	for _, pa := range p.Packages {
+// ComputeInterfaceImplementationMatrix processes all loaded types and
+// adds cross-package and intra-package Refs for Implementation and
+// Extension edges of the graph.
+func (pg *PackageGraph) ComputeInterfaceImplementationMatrix() {
+	for _, pa := range pg.Packages {
 		for _, iface := range pa.Interfaces {
-			for _, pb := range p.Packages {
+			for _, pb := range pg.Packages {
 				for _, typ := range pb.Impls {
 					if typ == iface {
 						continue

@@ -20,6 +20,9 @@ type Position struct {
 }
 
 const (
+	// NoPos represents a mising position. It has the same
+	// semantics as token.NoPos. It may be used in place of an
+	// "end" Pos if the end of an identifier isn't known.
 	NoPos = token.NoPos
 )
 
@@ -29,11 +32,13 @@ func (p Position) String() string {
 	}
 	if p.EndL >= 0 {
 		return fmt.Sprintf("%s:%d:%d-%d:%d", p.File, p.PosL, p.PosC, p.EndL, p.EndC)
-	} else {
-		return fmt.Sprintf("%s:%d:%d", p.File, p.PosL, p.PosC)
 	}
+	return fmt.Sprintf("%s:%d:%d", p.File, p.PosL, p.PosC)
 }
 
+// NewPosition creates a Position from a token.FileSet and a pair of
+// Pos in that FileSet. It will panic if both Pos are not from the
+// same Filename.
 func NewPosition(fset *token.FileSet, pos, end token.Pos) Position {
 	ppos := fset.Position(pos)
 	if end == token.NoPos {

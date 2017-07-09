@@ -11,11 +11,22 @@ import (
 // etc.)
 type RefType int
 
+// These are the possible types of edges in a graph.
 const (
+	// Instantiation of a type in another package.
 	Instantiation = iota
+
+	// Call of a function in another pacakge.
 	Call
+
+	// Implementation of an interface by a type.
 	Implementation
+
+	// Extension of an interface by another interface.
 	Extension
+
+	// Reference is the default, used when we can't determine the
+	// type of reference.
 	Reference
 )
 
@@ -31,12 +42,13 @@ func (rt RefType) String() string {
 		return "Extension"
 	case Reference:
 		return "Reference"
-	default:
-		panic("Unknown RefType used")
 	}
+	panic("Unknown RefType used")
 }
 
-func refTypeForId(prog *loader.Program, id *ast.Ident) RefType {
+// refTypeForIdent walks the AST from a given Ident and deducts what
+// type of Reference it is performing.
+func refTypeForIdent(prog *loader.Program, id *ast.Ident) RefType {
 	_, path, _ := prog.PathEnclosingInterval(id.Pos(), id.End())
 	// Walk the file's AST to find OutRefs and index those.
 	for _, n := range path {
