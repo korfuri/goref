@@ -3,4 +3,4 @@ package lib
 func Fun() {
 }
 
-type Typ struct {}
+type Typ struct{}

@@ -6,10 +6,9 @@ import (
 	"testing"
 )
 
-
 func TestVendoredPackage(t *testing.T) {
 	const (
-		pkgpath = "github.com/korfuri/goref/testprograms/vendored/main"
+		pkgpath  = "github.com/korfuri/goref/testprograms/vendored/main"
 		filepath = "testprograms/vendored/main.go"
 	)
 
