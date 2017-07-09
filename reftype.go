@@ -25,6 +25,11 @@ const (
 	// Extension of an interface by another interface.
 	Extension
 
+	// Import is the import of a package by another. `fromIdent`
+	// may differ from the name of the target package in the case
+	// of named imports. For dot-imports, `fromIdent` is ".".
+	Import
+
 	// Reference is the default, used when we can't determine the
 	// type of reference.
 	Reference
@@ -40,6 +45,8 @@ func (rt RefType) String() string {
 		return "Implementation"
 	case Extension:
 		return "Extension"
+	case Import:
+		return "Import"
 	case Reference:
 		return "Reference"
 	}

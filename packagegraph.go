@@ -111,8 +111,35 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 			importedPkg := pg.loadPackage(prog, ipath, i)
 
 			// Set up the edges on the package dependency graph
-			importedPkg.Dependents[loadpath] = pkg
-			pkg.Dependencies[ipath] = importedPkg
+			var importAs string
+			// If the import is unqualified
+			if imported.Name == nil {
+				importAs = i.Pkg.Name()
+			} else {
+				importAs = imported.Name.String()
+			}
+
+			// Create a Ref to each file in the imported
+			// package. This is useful in two ways:
+			// reverse lookups can happen from any file in
+			// a package, and users are free to decide
+			// what file(s) they want to look up after
+			// finding `Import` OutRefs in a package.
+			for _, f := range i.Files {
+				if f.Name != nil {
+					r := &Ref{
+						RefType:      Import,
+						FromPosition: NewPosition(prog.Fset, imported.Pos(), imported.End()),
+						ToPosition:   NewPosition(prog.Fset, f.Name.Pos(), f.Name.End()),
+						FromIdent:    importAs,
+						ToIdent:      i.Pkg.Name(),
+						FromPackage:  pkg,
+						ToPackage:    importedPkg,
+					}
+					pkg.OutRefs = append(pkg.OutRefs, r)
+					importedPkg.InRefs = append(importedPkg.InRefs, r)
+				}
+			}
 		}
 	}
 

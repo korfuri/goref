@@ -42,16 +42,6 @@ func main() {
 	log.Printf("%d packages in the graph\n", len(m.Packages))
 	log.Printf("%d files in the graph\n", len(m.Files))
 
-	log.Printf("Packages that depend on `fmt`:\n")
-	for d, _ := range m.Packages["fmt"].Dependents {
-		log.Printf("   - %s\n", d)
-	}
-
-	log.Printf("Packages that `goref` depends on:\n")
-	for d, _ := range m.Packages["github.com/korfuri/goref"].Dependencies {
-		log.Printf("   - %s\n", d)
-	}
-
 	log.Printf("Package `goref` has these files:\n")
 	for d, _ := range m.Packages["github.com/korfuri/goref"].Files {
 		log.Printf("   - %s\n", d)

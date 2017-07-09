@@ -33,5 +33,8 @@ type Ref struct {
 }
 
 func (r *Ref) String() string {
-	return fmt.Sprintf("%s of to:`%s.%s` at %s by from:`%s.%s` at %s", r.RefType, r.ToPackage, r.ToIdent, r.ToPosition, r.FromPackage, r.FromIdent, r.FromPosition)
+	return fmt.Sprintf("%s of to:`%s.%s` at %s by from:`%s.%s` at %s",
+		r.RefType,
+		r.ToPackage, r.ToIdent, r.ToPosition,
+		r.FromPackage, r.FromIdent, r.FromPosition)
 }

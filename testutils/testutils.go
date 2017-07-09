@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/korfuri/goref"
@@ -11,12 +12,17 @@ import (
 // Asserts that a collection of Ref contains at least one element that
 // satisfies a given predicate.
 func ContainsRefP(slc *[]*goref.Ref, pred func(*goref.Ref) bool) bool {
+	return FindRefP(slc, pred) != nil
+}
+
+// FindRefP returns the first Ref in a colletion that satisfies the given predicate
+func FindRefP(slc *[]*goref.Ref, pred func(*goref.Ref) bool) *goref.Ref {
 	for _, r := range *slc {
 		if pred(r) {
-			return true
+			return r
 		}
 	}
-	return false
+	return nil
 }
 
 // stringifyRefslice returns a string representation of a []*Ref.
@@ -37,6 +43,16 @@ func EqualRefPred(compRef *goref.Ref) func(*goref.Ref) bool {
 			r.ToIdent == compRef.ToIdent &&
 			r.ToPackage == compRef.ToPackage &&
 			r.RefType == compRef.RefType)
+	}
+}
+
+// ToPositionFilenamePred returns a predicated that accepts a *Ref as
+// argument and returns whether the Ref's ToPosition's Filename ends
+// with `suffix`.
+func ToPositionFilenamePred(suffix string) func(*goref.Ref) bool {
+	return func(r *goref.Ref) bool {
+		f := r.ToPosition.File
+		return strings.HasSuffix(f, suffix)
 	}
 }
 
@@ -61,4 +77,22 @@ func AssertPresenceOfRef(t *testing.T, toPkg *goref.Package, toId string, fromPk
 		assert.False(t, ContainsRefP(&toPkg.InRefs, pred), "ifacePkg(%s).InRefs contains a Ref matching the forbidden Ref: [%s].\nInRefs was: \n%s", toPkg, refref.String(), stringifyRefslice(toPkg.InRefs))
 		assert.False(t, ContainsRefP(&fromPkg.OutRefs, pred), "implPkg(%s).OutRefs contains a Ref matching the forbidden Ref: [%s].\nOutRefs was: \n%s", fromPkg, refref.String(), stringifyRefslice(fromPkg.OutRefs))
 	}
+}
+
+// GetRef finds a ref in the InRefs of the provided package that
+// matches the provided parameters. It fails the test if no such ref
+// can be found or if the ref doesn't exist in the corresponding
+// OutRefs.
+func GetRef(t *testing.T, toPkg *goref.Package, toId string, fromPkg *goref.Package, fromId string, reftype goref.RefType) *goref.Ref {
+	pred := EqualRefPred(&goref.Ref{
+		FromPackage: fromPkg,
+		FromIdent:   fromId,
+		ToPackage:   toPkg,
+		ToIdent:     toId,
+		RefType:     reftype,
+	})
+	r := FindRefP(&toPkg.InRefs, pred)
+	assert.NotNil(t, r)
+	assert.Contains(t, fromPkg.OutRefs, r)
+	return r
 }

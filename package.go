@@ -12,15 +12,6 @@ type Package struct {
 	// Name of the package
 	Name string
 
-	// Dependencies is the map of load-paths imported within this
-	// package to the corresponding Package objects.
-	Dependencies map[string]*Package
-
-	// Dependents is the map of packages' load-paths that load
-	// this package through any load-path, mapped to their
-	// corresponding Package objects.
-	Dependents map[string]*Package
-
 	// Files is a map of paths to File objects that make up this package.
 	Files map[string]*File
 
@@ -64,14 +55,12 @@ func (p *Package) String() string {
 func newPackage(pi *loader.PackageInfo, fset *token.FileSet) *Package {
 	return &Package{
 		//PackageInfo:  pi,
-		Name:         pi.Pkg.Name(),
-		Dependencies: make(map[string]*Package),
-		Dependents:   make(map[string]*Package),
-		Files:        make(map[string]*File),
-		OutRefs:      make([]*Ref, 0),
-		InRefs:       make([]*Ref, 0),
-		Interfaces:   make([]*types.Named, 0),
-		Impls:        make([]*types.Named, 0),
-		Fset:         fset,
+		Name:       pi.Pkg.Name(),
+		Files:      make(map[string]*File),
+		OutRefs:    make([]*Ref, 0),
+		InRefs:     make([]*Ref, 0),
+		Interfaces: make([]*types.Named, 0),
+		Impls:      make([]*types.Named, 0),
+		Fset:       fset,
 	}
 }

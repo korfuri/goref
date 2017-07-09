@@ -21,7 +21,29 @@ func TestDotImports(t *testing.T) {
 	pkg := pg.Packages[pkgpath]
 	lib := pg.Packages[pkgpath+"/lib"]
 	assert.Empty(t, pkg.InRefs)
-	assert.Len(t, pkg.OutRefs, 2)
+	assert.Len(t, pkg.OutRefs, 4)
 	testutils.AssertPresenceOfRef(t, lib, "Typ", pkg, "Typ", goref.Instantiation, true)
 	testutils.AssertPresenceOfRef(t, lib, "Fun", pkg, "Fun", goref.Call, true)
+
+	basepred := testutils.EqualRefPred(&goref.Ref{
+		FromPackage: pkg,
+		FromIdent:   ".",
+		ToPackage:   lib,
+		ToIdent:     "lib",
+		RefType:     goref.Import,
+	})
+	{
+		pospred := testutils.ToPositionFilenamePred("lib.go")
+		r := testutils.FindRefP(&lib.InRefs, func(r *goref.Ref) bool {
+			return basepred(r) && pospred(r)
+		})
+		assert.NotNil(t, r)
+	}
+	{
+		pospred := testutils.ToPositionFilenamePred("lib2.go")
+		r := testutils.FindRefP(&lib.InRefs, func(r *goref.Ref) bool {
+			return basepred(r) && pospred(r)
+		})
+		assert.NotNil(t, r)
+	}
 }
