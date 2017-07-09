@@ -21,9 +21,9 @@ type PackageGraph struct {
 	Files map[string]*File
 }
 
-// cleanImportSpec takes an ast.ImportSpec and cleans the Path
+// CleanImportSpec takes an ast.ImportSpec and cleans the Path
 // component by trimming the quotes (") that surround it.
-func cleanImportSpec(spec *ast.ImportSpec) string {
+func CleanImportSpec(spec *ast.ImportSpec) string {
 	// FIXME we should make sure we understand what can cause Path
 	// to be empty.
 	if spec.Path != nil {
@@ -34,7 +34,7 @@ func cleanImportSpec(spec *ast.ImportSpec) string {
 	return "<unknown>"
 }
 
-// candidatePaths returns a slice enumerating all the possible import
+// CandidatePaths returns a slice enumerating all the possible import
 // paths for a package. This means inserting the possible "vendor"
 // directory location from the load path of the importing package.
 //
@@ -50,7 +50,7 @@ func cleanImportSpec(spec *ast.ImportSpec) string {
 // package path when building the graph. In this sense we follow the
 // go tool's convention to not try to detect when two packages loaded
 // through different paths are the same package.
-func candidatePaths(loadpath, parent string) []string {
+func CandidatePaths(loadpath, parent string) []string {
 	const vendor = "vendor"
 	paths := []string{}
 	for parent != "." && parent != "" {
@@ -94,8 +94,8 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 		for _, imported := range f.Imports {
 			// Find the import's load-path and load that
 			// package into the graph.
-			ipath := cleanImportSpec(imported)
-			candidatePaths := candidatePaths(ipath, loadpath)
+			ipath := CleanImportSpec(imported)
+			candidatePaths := CandidatePaths(ipath, loadpath)
 			var i *loader.PackageInfo
 			for _, c := range candidatePaths {
 				i = prog.Package(c)
