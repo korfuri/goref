@@ -74,7 +74,7 @@ func refTypeForId(prog *loader.Program, id *ast.Ident) RefType {
 				// an imported identifier, in the case
 				// of dot imports.
 				if t == id {
-					return Call
+					return Instantiation
 				}
 			}
 		}
