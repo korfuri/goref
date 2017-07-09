@@ -53,28 +53,28 @@ func main() {
 	}
 
 	log.Printf("Here are the uses of objects in `goref`:\n")
-	for pos, ref := range m.Packages["github.com/korfuri/goref"].InRefs {
-		log.Printf("   - %s %s\n", pos, ref)
+	for _, ref := range m.Packages["github.com/korfuri/goref"].InRefs {
+		log.Printf("   - %s\n", ref)
 	}
 
 	log.Printf("Here is where `goref`.`InRefs` is used:\n")
-	for pos, ref := range m.Packages["github.com/korfuri/goref"].InRefs {
+	for _, ref := range m.Packages["github.com/korfuri/goref"].InRefs {
 		if ref.ToIdent == "InRefs" {
-			log.Printf("   - %s\n", pos)
+			log.Printf("   - %s\n", ref)
 		}
 	}
 
 	log.Printf("Here are the uses of objects in `log` by `main`:\n")
-	for pos, ref := range m.Packages["log"].InRefs {
+	for _, ref := range m.Packages["log"].InRefs {
 		if ref.FromPackage == m.Packages["github.com/korfuri/goref/main"] {
-			log.Printf("   - %s %s\n", pos, ref)
+			log.Printf("   - %s\n", ref)
 		}
 	}
 
 	log.Printf("Who implements `log.Stringer`?\n")
-	for pos, ref := range m.Packages["fmt"].InRefs {
+	for _, ref := range m.Packages["fmt"].InRefs {
 		if ref.ToIdent == "Stringer" && ref.RefType == goref.Implementation {
-			log.Printf("   - implemented at %s by %s\n", pos, ref)
+			log.Printf("   - %s\n", ref)
 		}
 	}
 
