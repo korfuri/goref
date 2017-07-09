@@ -62,4 +62,19 @@ func TestInterfaceImplMatrix(t *testing.T) {
 	testutils.AssertPresenceOfRef(t, lib, "IfaceLibB", pkg, "IfaceAB", goref.Extension, true)
 	testutils.AssertPresenceOfRef(t, lib, "IfaceLibAB", pkg, "IfaceAB", goref.Extension, true)
 	testutils.AssertPresenceOfRef(t, pkg, "ifaceC", pkg, "IfaceAB", goref.Extension, false)
+
+	// Nothing implements not extends Empty, because we explicitly
+	// filter out interface{}.
+	testutils.AssertPresenceOfRef(t, pkg, "Empty", pkg, "A", goref.Implementation, false)
+	testutils.AssertPresenceOfRef(t, pkg, "Empty", pkg, "B", goref.Implementation, false)
+	testutils.AssertPresenceOfRef(t, pkg, "Empty", pkg, "AB", goref.Implementation, false)
+	testutils.AssertPresenceOfRef(t, pkg, "Empty", lib, "LibA", goref.Implementation, false)
+	testutils.AssertPresenceOfRef(t, pkg, "Empty", lib, "libB", goref.Implementation, false)
+	testutils.AssertPresenceOfRef(t, pkg, "Empty", lib, "LibAB", goref.Implementation, false)
+	testutils.AssertPresenceOfRef(t, pkg, "Empty", pkg, "IfaceA", goref.Extension, false)
+	testutils.AssertPresenceOfRef(t, pkg, "Empty", pkg, "IfaceB", goref.Extension, false)
+	testutils.AssertPresenceOfRef(t, pkg, "Empty", pkg, "IfaceAB", goref.Extension, false)
+	testutils.AssertPresenceOfRef(t, pkg, "Empty", lib, "IfaceLibA", goref.Implementation, false)
+	testutils.AssertPresenceOfRef(t, pkg, "Empty", lib, "IfaceLibB", goref.Implementation, false)
+	testutils.AssertPresenceOfRef(t, pkg, "Empty", lib, "IfaceLibAB", goref.Implementation, false)
 }

@@ -28,6 +28,8 @@ type ifaceC interface {
 	C()
 }
 
+type Empty interface{}
+
 type A int
 type B int
 type AB int
