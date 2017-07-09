@@ -1,4 +1,6 @@
 package lib
 
-func Foo() {
+func Fun() {
 }
+
+type Typ struct {}

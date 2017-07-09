@@ -1,9 +1,11 @@
 package goref_test
 
 import (
-	"github.com/korfuri/goref"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/korfuri/goref"
+	"github.com/korfuri/goref/testutils"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDotImports(t *testing.T) {
@@ -15,14 +17,11 @@ func TestDotImports(t *testing.T) {
 	pg := goref.NewPackageGraph()
 	pg.LoadProgram(pkgpath, []string{filepath})
 	assert.Contains(t, pg.Packages, pkgpath)
-	assert.Contains(t, pg.Packages, pkgpath + "/lib")
+	assert.Contains(t, pg.Packages, pkgpath+"/lib")
 	pkg := pg.Packages[pkgpath]
+	lib := pg.Packages[pkgpath+"/lib"]
 	assert.Empty(t, pkg.InRefs)
-	assert.Len(t, pkg.OutRefs, 1)
-	r := pkg.OutRefs[0]
-	assert.True(t, goref.Call == r.RefType, r.String())
-	assert.Equal(t, "Foo", r.ToIdent)
-	assert.Equal(t, "Foo", r.FromIdent)
-	assert.Equal(t, pg.Packages[pkgpath + "/lib"], r.ToPackage)
-	assert.Equal(t, pkg, r.FromPackage)
+	assert.Len(t, pkg.OutRefs, 2)
+	testutils.AssertPresenceOfRef(t, lib, "Typ", pkg, "Typ", goref.Instantiation, true)
+	testutils.AssertPresenceOfRef(t, lib, "Fun", pkg, "Fun", goref.Call, true)
 }
