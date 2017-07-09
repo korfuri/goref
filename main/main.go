@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/dustin/go-humanize"
 	"github.com/korfuri/goref"
+	"github.com/korfuri/goref/json"
 
 	"log"
 	"os"
@@ -79,6 +80,21 @@ func main() {
 	}
 
 	log.Printf("Displaying took %s (total runtime: %s)\n", time.Since(computeMatrixDone), time.Since(start))
+
+	jsonch := make(chan []byte)
+	errch := make(chan error)
+	done := make(chan struct{})
+	go json.GraphAsJSON(*m, jsonch, errch, done)
+	for {
+		select {
+		case j := <-jsonch:
+			log.Printf("%s\n", string(j))
+		case err := <-errch:
+			log.Fatal(err)
+		case <-done:
+			return
+		}
+	}
 }
 
 func unused() interface{} {
