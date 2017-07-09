@@ -1,12 +1,13 @@
 package goref
 
 import (
-	log "github.com/sirupsen/logrus"
 	"go/ast"
 	"go/types"
-	"golang.org/x/tools/go/loader"
 	"path"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/tools/go/loader"
 )
 
 // PackageGraph represents a collection of Go packages and their

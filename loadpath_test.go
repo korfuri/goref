@@ -1,9 +1,10 @@
 package goref
 
 import (
-	"github.com/stretchr/testify/assert"
 	"go/ast"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCleanImportSpec(t *testing.T) {

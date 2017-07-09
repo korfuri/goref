@@ -1,9 +1,10 @@
 package goref_test
 
 import (
+	"testing"
+
 	"github.com/korfuri/goref"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestVendoredPackage(t *testing.T) {

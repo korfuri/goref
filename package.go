@@ -3,6 +3,7 @@ package goref
 import (
 	"go/token"
 	"go/types"
+
 	"golang.org/x/tools/go/loader"
 )
 
