@@ -19,6 +19,11 @@ type PackageGraph struct {
 
 	// Map of file path to File objects.
 	Files map[string]*File
+
+	// version is passed to all packages loaded in this
+	// graph. This assumes that all packages we'll load are loaded
+	// from the same snapshot of the Go universe.
+	version int64
 }
 
 // CleanImportSpec takes an ast.ImportSpec and cleans the Path
@@ -76,7 +81,7 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 	if pkg, in := pg.Packages[loadpath]; in {
 		return pkg
 	}
-	pkg := newPackage(pi, prog.Fset)
+	pkg := newPackage(pi, prog.Fset, pg.version)
 	pg.Packages[loadpath] = pkg
 
 	// Iterate over all files in that package.
@@ -190,21 +195,26 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 	return pkg
 }
 
-// LoadProgram loads recursively packages used from a `main` package.
-// It may be called multiple times to load multiple programs'
-// package sets in the PackageGraph.
-func (pg *PackageGraph) LoadProgram(loadpath string, filenames []string) {
+// LoadPrograms loads the specified packages and their transitive
+// dependencies, as well as XTests (as defined by go/loader) if
+// includeTests is true.  It may be called multiple times to load
+// multiple package sets in the PackageGraph.
+func (pg *PackageGraph) LoadPrograms(packages []string, includeTests bool) error {
 	conf := loader.Config{}
-	conf.CreateFromFilenames(loadpath, filenames...)
+	if _, err := conf.FromArgs(packages, includeTests); err != nil {
+		return err
+	}
 
 	prog, err := conf.Load()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	for k, v := range prog.AllPackages {
 		pg.loadPackage(prog, k.Path(), v)
 	}
+
+	return nil
 }
 
 // ComputeInterfaceImplementationMatrix processes all loaded types and
@@ -259,9 +269,10 @@ func (pg *PackageGraph) ComputeInterfaceImplementationMatrix() {
 }
 
 // NewPackageGraph returns a new, empty PackageGraph.
-func NewPackageGraph() *PackageGraph {
+func NewPackageGraph(version int64) *PackageGraph {
 	return &PackageGraph{
 		Packages: make(map[string]*Package),
 		Files:    make(map[string]*File),
+		version:  version,
 	}
 }

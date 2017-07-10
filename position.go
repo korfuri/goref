@@ -1,6 +1,7 @@
 package goref
 
 import (
+	"encoding/json"
 	"fmt"
 	"go/token"
 )
@@ -14,9 +15,11 @@ import (
 //
 // The Pos is not optional and must resolve to file:line:column.
 type Position struct {
-	File       string
-	PosL, PosC int
-	EndL, EndC int
+	File string `json:"filename"`
+	PosL int    `json:"start_line"`
+	PosC int    `json:"start_col"`
+	EndL int    `json:"end_line"`
+	EndC int    `json:"end_col"`
 }
 
 const (
@@ -60,5 +63,24 @@ func NewPosition(fset *token.FileSet, pos, end token.Pos) Position {
 		PosC: ppos.Column,
 		EndL: pend.Line,
 		EndC: pend.Column,
+	}
+}
+
+// MarshalJSON implements encoding/json.Marshaler interface
+func (p Position) MarshalJSON() ([]byte, error) {
+	type withoutend struct {
+		File string `json:"filename"`
+		PosL int    `json:"start_line"`
+		PosC int    `json:"start_col"`
+	}
+	type withend Position
+	if p.EndL < 0 {
+		return json.Marshal(withoutend{
+			File: p.File,
+			PosL: p.PosL,
+			PosC: p.PosC,
+		})
+	} else {
+		return json.Marshal(withend(p))
 	}
 }

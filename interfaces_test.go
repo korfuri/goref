@@ -10,12 +10,11 @@ import (
 
 func TestInterfaceImplMatrix(t *testing.T) {
 	const (
-		pkgpath  = "github.com/korfuri/goref/testprograms/interfaces/main"
-		filepath = "testprograms/interfaces/main.go"
+		pkgpath = "github.com/korfuri/goref/testprograms/interfaces"
 	)
 
-	pg := goref.NewPackageGraph()
-	pg.LoadProgram(pkgpath, []string{filepath})
+	pg := goref.NewPackageGraph(0)
+	pg.LoadPrograms([]string{pkgpath}, false)
 	assert.Contains(t, pg.Packages, pkgpath)
 	pg.ComputeInterfaceImplementationMatrix()
 

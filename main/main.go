@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/dustin/go-humanize"
 	"github.com/korfuri/goref"
+	"github.com/korfuri/goref/json"
 
 	"log"
 	"os"
@@ -26,8 +27,8 @@ func main() {
 
 	start := time.Now()
 
-	m := goref.NewPackageGraph()
-	m.LoadProgram("github.com/korfuri/goref/main", []string{"main.go"})
+	m := goref.NewPackageGraph(0)
+	m.LoadPrograms([]string{"github.com/korfuri/goref/main/main"}, true)
 
 	log.Printf("Loading took %s\n", time.Since(start))
 	reportMemory()
@@ -43,12 +44,12 @@ func main() {
 	log.Printf("%d files in the graph\n", len(m.Files))
 
 	log.Printf("Package `goref` has these files:\n")
-	for d, _ := range m.Packages["github.com/korfuri/goref"].Files {
+	for d := range m.Packages["github.com/korfuri/goref"].Files {
 		log.Printf("   - %s\n", d)
 	}
 
 	log.Printf("Package `fmt` has these files:\n")
-	for d, _ := range m.Packages["fmt"].Files {
+	for d := range m.Packages["fmt"].Files {
 		log.Printf("   - %s\n", d)
 	}
 
@@ -79,6 +80,21 @@ func main() {
 	}
 
 	log.Printf("Displaying took %s (total runtime: %s)\n", time.Since(computeMatrixDone), time.Since(start))
+
+	jsonch := make(chan []byte)
+	errch := make(chan error)
+	done := make(chan struct{})
+	go json.GraphAsJSON(*m, jsonch, errch, done)
+	for {
+		select {
+		case j := <-jsonch:
+			log.Printf("%s\n", string(j))
+		case err := <-errch:
+			log.Fatal(err)
+		case <-done:
+			return
+		}
+	}
 }
 
 func unused() interface{} {

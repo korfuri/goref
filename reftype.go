@@ -1,6 +1,7 @@
 package goref
 
 import (
+	"encoding/json"
 	"go/ast"
 
 	"golang.org/x/tools/go/loader"
@@ -100,4 +101,9 @@ func refTypeForIdent(prog *loader.Program, id *ast.Ident) RefType {
 		}
 	}
 	return Reference
+}
+
+// MarshalJSON implements encoding/json.Marshaler interface
+func (r RefType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(r.String())
 }

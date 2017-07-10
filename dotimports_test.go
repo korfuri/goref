@@ -10,12 +10,11 @@ import (
 
 func TestDotImports(t *testing.T) {
 	const (
-		pkgpath  = "github.com/korfuri/goref/testprograms/dotimports"
-		filepath = "testprograms/dotimports/main.go"
+		pkgpath = "github.com/korfuri/goref/testprograms/dotimports"
 	)
 
-	pg := goref.NewPackageGraph()
-	pg.LoadProgram(pkgpath, []string{filepath})
+	pg := goref.NewPackageGraph(0)
+	pg.LoadPrograms([]string{pkgpath}, true)
 	assert.Contains(t, pg.Packages, pkgpath)
 	assert.Contains(t, pg.Packages, pkgpath+"/lib")
 	pkg := pg.Packages[pkgpath]
