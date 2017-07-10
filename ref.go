@@ -42,36 +42,28 @@ func (r *Ref) String() string {
 
 // MarshalJSON implements encoding/json.Marshaler interface
 func (r Ref) MarshalJSON() ([]byte, error) {
-	type pkg struct {
-		Importpath string `json:"import_path"`
-		Version    int64  `json:"version"`
-	}
 	type location struct {
 		Position Position `json:"position"`
-		Pkg      pkg      `json:"package"`
+		Pkg      string   `json:"package"`
 		Ident    string   `json:"ident"`
 	}
 	type refForJSON struct {
-		From location `json:"from"`
-		To   location `json:"to"`
-		Typ  RefType  `json:"type"`
+		From    location `json:"from"`
+		To      location `json:"to"`
+		Typ     RefType  `json:"type"`
+		Version int64    `json:"version"`
 	}
 	return json.Marshal(refForJSON{
+		Version: r.FromPackage.Version,
 		From: location{
 			Position: r.FromPosition,
-			Pkg: pkg{
-				Importpath: r.FromPackage.Path,
-				Version:    r.FromPackage.Version,
-			},
-			Ident: r.FromIdent,
+			Pkg:      r.FromPackage.Path,
+			Ident:    r.FromIdent,
 		},
 		To: location{
 			Position: r.ToPosition,
-			Pkg: pkg{
-				Importpath: r.ToPackage.Path,
-				Version:    r.FromPackage.Version,
-			},
-			Ident: r.ToIdent,
+			Pkg:      r.ToPackage.Path,
+			Ident:    r.ToIdent,
 		},
 		Typ: r.RefType,
 	})

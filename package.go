@@ -1,6 +1,8 @@
 package goref
 
 import (
+	"encoding/json"
+	"fmt"
 	"go/token"
 	"go/types"
 
@@ -54,8 +56,29 @@ type Package struct {
 	Path string
 }
 
+// String implements the Stringer interface
 func (p *Package) String() string {
 	return p.Name
+}
+
+// DocumentID returns a consistent id for this package at this
+// version. This can be used to index the package e.g. in
+// ElasticSearch. The ID contains the document version and path.
+func (p Package) DocumentID() string {
+	// "v1" is a prefix to recognize this DocumentID format, in
+	// case the format changes in the future.
+	return fmt.Sprintf("v1@%d@%s", p.Version, p.Path)
+}
+
+// MarshalJSON implements encoding/json.Marshaler interface
+func (p Package) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Path    string `json:"loadpath"`
+		Version int64  `json:"version"`
+	}{
+		Path:    p.Path,
+		Version: p.Version,
+	})
 }
 
 func newPackage(pi *loader.PackageInfo, fset *token.FileSet, version int64) *Package {

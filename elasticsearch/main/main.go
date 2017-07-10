@@ -1,16 +1,14 @@
 package main
 
 import (
-	"context"
 	"log"
 
 	"github.com/korfuri/goref"
+	"github.com/korfuri/goref/elasticsearch"
 	elastic "gopkg.in/olivere/elastic.v5"
 )
 
 func main() {
-	ctx := context.Background()
-
 	// Create a client
 	client, err := elastic.NewClient(
 		elastic.SetURL("http://localhost:9200"),
@@ -23,17 +21,7 @@ func main() {
 	pg.LoadProgram("github.com/korfuri/goref/main", []string{"main.go"})
 	pg.ComputeInterfaceImplementationMatrix()
 
-	for _, p := range pg.Packages {
-		for _, r := range p.OutRefs {
-			_, err := client.Index().
-				Index("goref").
-				Type("ref").
-				BodyJson(r).
-				Refresh("true").
-				Do(ctx)
-			if err != nil {
-				log.Fatalf("FAIL: %s", err)
-			}
-		}
+	if missed, err := elasticsearch.LoadGraphToElastic(*pg, client); err != nil {
+		log.Fatalf("Couldn't load %d references. Error: %s", len(missed), err)
 	}
 }
