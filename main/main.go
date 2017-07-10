@@ -44,12 +44,12 @@ func main() {
 	log.Printf("%d files in the graph\n", len(m.Files))
 
 	log.Printf("Package `goref` has these files:\n")
-	for d, _ := range m.Packages["github.com/korfuri/goref"].Files {
+	for d := range m.Packages["github.com/korfuri/goref"].Files {
 		log.Printf("   - %s\n", d)
 	}
 
 	log.Printf("Package `fmt` has these files:\n")
-	for d, _ := range m.Packages["fmt"].Files {
+	for d := range m.Packages["fmt"].Files {
 		log.Printf("   - %s\n", d)
 	}
 
