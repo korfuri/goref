@@ -18,7 +18,7 @@ func main() {
 	}
 
 	pg := goref.NewPackageGraph(0)
-	pg.LoadProgram("github.com/korfuri/goref/main", []string{"main.go"})
+	pg.LoadPrograms([]string{"github.com/korfuri/goref/main/main"}, true)
 	pg.ComputeInterfaceImplementationMatrix()
 
 	if missed, err := elasticsearch.LoadGraphToElastic(*pg, client); err != nil {

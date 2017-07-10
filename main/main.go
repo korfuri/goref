@@ -28,7 +28,7 @@ func main() {
 	start := time.Now()
 
 	m := goref.NewPackageGraph(0)
-	m.LoadProgram("github.com/korfuri/goref/main", []string{"main.go"})
+	m.LoadPrograms([]string{"github.com/korfuri/goref/main/main"}, true)
 
 	log.Printf("Loading took %s\n", time.Since(start))
 	reportMemory()

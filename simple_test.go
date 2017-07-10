@@ -10,12 +10,12 @@ import (
 
 func TestSimplePackage(t *testing.T) {
 	const (
-		pkgpath  = "github.com/korfuri/goref/testprograms/simple/main"
+		pkgpath  = "github.com/korfuri/goref/testprograms/simple"
 		filepath = "testprograms/simple/main.go"
 	)
 
 	pg := goref.NewPackageGraph(0)
-	pg.LoadProgram(pkgpath, []string{filepath})
+	pg.LoadPrograms([]string{pkgpath}, false)
 	assert.Contains(t, pg.Packages, pkgpath)
 	assert.Contains(t, pg.Packages, "fmt")
 	pkg := pg.Packages[pkgpath]

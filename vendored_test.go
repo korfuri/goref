@@ -9,12 +9,12 @@ import (
 
 func TestVendoredPackage(t *testing.T) {
 	const (
-		pkgpath  = "github.com/korfuri/goref/testprograms/vendored/main"
+		pkgpath  = "github.com/korfuri/goref/testprograms/vendored"
 		filepath = "testprograms/vendored/main.go"
 	)
 
 	pg := goref.NewPackageGraph(0)
-	pg.LoadProgram(pkgpath, []string{filepath})
+	pg.LoadPrograms([]string{pkgpath}, false)
 	assert.Contains(t, pg.Packages, pkgpath)
 	assert.Contains(t, pg.Packages, "github.com/korfuri/goref/testprograms/vendored/vendor/github.com/korfuri/somedep")
 }
