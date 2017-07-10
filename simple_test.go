@@ -14,7 +14,7 @@ func TestSimplePackage(t *testing.T) {
 		filepath = "testprograms/simple/main.go"
 	)
 
-	pg := goref.NewPackageGraph(0)
+	pg := goref.NewPackageGraph(goref.ConstantVersion(0))
 	pg.LoadPrograms([]string{pkgpath}, false)
 	assert.Contains(t, pg.Packages, pkgpath)
 	assert.Contains(t, pg.Packages, "fmt")

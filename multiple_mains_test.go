@@ -13,7 +13,7 @@ func TestMultipleMainsFromMultipleCalls(t *testing.T) {
 		filebase = "testprograms/multiple_mains/"
 	)
 
-	pg := goref.NewPackageGraph(0)
+	pg := goref.NewPackageGraph(goref.ConstantVersion(0))
 	pg.LoadPrograms([]string{pkgbase + "1"}, false)
 	assert.Contains(t, pg.Packages, pkgbase+"1")
 	assert.Contains(t, pg.Packages, pkgbase+"common")
@@ -33,7 +33,7 @@ func TestMultipleMainsFromSameCalls(t *testing.T) {
 		filebase = "testprograms/multiple_mains/"
 	)
 
-	pg := goref.NewPackageGraph(0)
+	pg := goref.NewPackageGraph(goref.ConstantVersion(0))
 	pg.LoadPrograms([]string{pkgbase + "1", pkgbase + "2"}, false)
 	assert.Contains(t, pg.Packages, pkgbase+"1")
 	assert.Contains(t, pg.Packages, pkgbase+"common")

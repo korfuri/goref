@@ -10,14 +10,12 @@ import (
 )
 
 const (
-	Usage = `elastic_goref -version 42 -include_tests <true|false> \\
+	Usage = `elastic_goref -include_tests <true|false> \\
   -elastic_url http://localhost:9200/ -elastic_user elastic -elastic_password changeme \\
   github.com/korfuri/goref github.com/korfuri/goref/elastic/main`
 )
 
 var (
-	version = flag.Int64("version", -1,
-		"Version of the code being examined. Should increase monotonically when the code is updated.")
 	includeTests = flag.Bool("include_tests", true,
 		"Whether XTest packages should be included in the index.")
 	elasticUrl = flag.String("elastic_url", "http://localhost:9200",
@@ -38,7 +36,7 @@ func main() {
 	flag.Parse()
 	args := flag.Args()
 
-	if *version == -1 || len(args) == 0 {
+	if len(args) == 0 {
 		usage()
 	}
 
@@ -50,21 +48,26 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Filter out packages that already exist at this version in
-	// the index.
-	packages := make([]string, 0)
-	for _, a := range args {
-		if !elasticsearch.PackageExists(a, *version, client, *elasticIndex) {
-			packages = append(packages, a)
-		}
-	}
-
+	// // TODO(korfuri): This is broken now that versions are //
+	// // per-package and generated after processing a package's
+	// // files.
+	// //
+	// // Filter out packages that already exist at this version in
+	// // the index.
+	// packages := make([]string, 0)
+	// for _, a := range args {
+	// 	if !elasticsearch.PackageExists(a, *version, client, *elasticIndex) {
+	// 		packages = append(packages, a)
+	// 	}
+	// }
+	packages := args
+	
 	// Index the requested packages
 	log.Infof("Indexing packages: %v", packages)
 	if *includeTests {
 		log.Info("This index will include XTests.")
 	}
-	pg := goref.NewPackageGraph(0)
+	pg := goref.NewPackageGraph(goref.FileMTimeVersion)
 	pg.LoadPrograms(packages, *includeTests)
 	log.Info("Computing the interface-implementation matrix.")
 	pg.ComputeInterfaceImplementationMatrix()

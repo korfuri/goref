@@ -13,7 +13,7 @@ func TestInterfaceImplMatrix(t *testing.T) {
 		pkgpath = "github.com/korfuri/goref/testprograms/interfaces"
 	)
 
-	pg := goref.NewPackageGraph(0)
+	pg := goref.NewPackageGraph(goref.ConstantVersion(0))
 	pg.LoadPrograms([]string{pkgpath}, false)
 	assert.Contains(t, pg.Packages, pkgpath)
 	pg.ComputeInterfaceImplementationMatrix()

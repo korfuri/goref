@@ -20,10 +20,15 @@ type PackageGraph struct {
 	// Map of file path to File objects.
 	Files map[string]*File
 
-	// version is passed to all packages loaded in this
-	// graph. This assumes that all packages we'll load are loaded
-	// from the same snapshot of the Go universe.
-	version int64
+	// versionF is a function that returns the version of the
+	// provided Go package as an int64.
+	//
+	// A simple way to implement it, for a graph that will not
+	// outlive its packages' versions, is to provide a function
+	// that always returns 0. A more correct way to implement it
+	// is to look at the package's files and check their mtime.
+	// Both are provided in packagegraph_utils.go.
+	versionF func(loader.Program, loader.PackageInfo) (int64, error)
 }
 
 // CleanImportSpec takes an ast.ImportSpec and cleans the Path
@@ -74,14 +79,55 @@ func CandidatePaths(loadpath, parent string) []string {
 	return paths
 }
 
+// specialPackage returns hardcoded packages for packages wihtout a Go
+// implementation. Currently this is only "unsafe".
+func specialPackage(loadpath string) *Package {
+	if loadpath == "unsafe" {
+		return &Package{
+			Name:       "unsafe",
+			Path:       "unsafe",
+			InRefs:     make([]*Ref, 0),
+			
+			// The Files map must be empty as no files define that package.
+			//
+			// There exists a src/unsafe/unsafe.go but it
+			// is not loaded by go/loader, and so
+			// referencing it would cause more issues than
+			// not (as no Fileset would contain its
+			// contents)
+			Files:      make(map[string]*File),
+			Fset:       nil,
+
+			// We assume Unsafe has no interfaces, types or outrefs.
+			OutRefs:    make([]*Ref, 0),
+			Interfaces: make([]*types.Named, 0),
+			Impls:      make([]*types.Named, 0),
+
+			// We assume Unsafe only has one version and
+			// that version is immutable. If Unsafe's API
+			// changes that's OK, since anything can
+			// reference it at this version already.
+			Version:    1,
+		}
+	}
+	return nil
+}
+
 // loadPackage recursively loads a Go package into the Package
 // Graph. If the package was already loaded, it returns early. It
 // always returns the Package object for the loaded package.
 func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *loader.PackageInfo) *Package {
+	if pkg := specialPackage(loadpath); pkg != nil {
+		return pkg
+	}
 	if pkg, in := pg.Packages[loadpath]; in {
 		return pkg
 	}
-	pkg := newPackage(pi, prog.Fset, pg.version)
+	version, err := pg.versionF(*prog, *pi)
+	if err != nil {
+		return nil
+	}
+	pkg := newPackage(pi, prog.Fset, version)
 	pg.Packages[loadpath] = pkg
 
 	// Iterate over all files in that package.
@@ -114,7 +160,14 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 				continue
 			}
 			importedPkg := pg.loadPackage(prog, ipath, i)
-
+			if importedPkg == nil {
+				// This happens if versionF fails to
+				// determine the pacakge's version.
+				// Often this would mean that the
+				// package is a C package.
+				continue
+			}
+			
 			// Set up the edges on the package dependency graph
 			var importAs string
 			// If the import is unqualified
@@ -269,10 +322,10 @@ func (pg *PackageGraph) ComputeInterfaceImplementationMatrix() {
 }
 
 // NewPackageGraph returns a new, empty PackageGraph.
-func NewPackageGraph(version int64) *PackageGraph {
+func NewPackageGraph(versionF func(loader.Program, loader.PackageInfo) (int64, error)) *PackageGraph {
 	return &PackageGraph{
 		Packages: make(map[string]*Package),
 		Files:    make(map[string]*File),
-		version:  version,
+		versionF: versionF,
 	}
 }

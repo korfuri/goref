@@ -12,7 +12,7 @@ func TestCanImportEmptyPackage(t *testing.T) {
 		emptypkgpath = "github.com/korfuri/goref/testprograms/empty"
 	)
 
-	pg := goref.NewPackageGraph(0)
+	pg := goref.NewPackageGraph(goref.ConstantVersion(0))
 	pg.LoadPrograms([]string{emptypkgpath}, false)
 	assert.Len(t, pg.Packages, 1)
 	assert.Len(t, pg.Files, 1)
