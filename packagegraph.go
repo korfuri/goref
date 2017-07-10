@@ -15,7 +15,7 @@ import (
 // PackageGraph are also part of the PackageGraph.
 type PackageGraph struct {
 	// Map of package load-path to Package objects.
-	Packages map[string]*Package `json:packages`
+	Packages map[string]*Package
 
 	// Map of file path to File objects.
 	Files map[string]*File
