@@ -26,6 +26,8 @@ var (
 		"Username to authenticate with ElasticSearch.")
 	elasticPassword = flag.String("elastic_password", "changeme",
 		"Password to authenticate with ElasticSearch.")
+	elasticIndex = flag.String("elastic_index", "goref",
+		"Name of the index to use in ElasticSearch.")
 )
 
 func usage() {
@@ -52,7 +54,7 @@ func main() {
 	// the index.
 	packages := make([]string, 0)
 	for _, a := range args {
-		if !elasticsearch.PackageExists(a, *version, client) {
+		if !elasticsearch.PackageExists(a, *version, client, *elasticIndex) {
 			packages = append(packages, a)
 		}
 	}
@@ -72,7 +74,7 @@ func main() {
 
 	// Load the indexed references into ElasticSearch
 	log.Info("Inserting references into ElasticSearch.")
-	if missed, err := elasticsearch.LoadGraphToElastic(*pg, client); err != nil {
+	if missed, err := elasticsearch.LoadGraphToElastic(*pg, client, *elasticIndex); err != nil {
 		log.Fatalf("Couldn't load %d references. Error: %s", len(missed), err)
 	}
 	log.Info("Done, bye.")
