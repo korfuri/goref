@@ -73,6 +73,10 @@ no support to deduplicate `github.com/foo/bar` and
 tool's
 [philosophy on that question](https://docs.google.com/document/d/1Bz5-UB7g2uPBdOx-rw5t9MxJwkfpx90cqG9AFL0JAYo/edit).
 
+Similarly, code mirrors such as gopkg.in are not considered in any
+specific way by goref. `github.com/foo/bar` and `gopkg.in/foo/bar.v42`
+are treated as different packages even if they are identical.
+
 ## Types of references
 
 Currently, goref provides the following kinds of references, defined
