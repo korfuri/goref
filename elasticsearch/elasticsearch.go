@@ -16,35 +16,44 @@ const (
 	maxErrorsReported = 20
 )
 
+// PackageExists returns whether the provided loadpath + version tuple
+// exists in this index.
+func PackageExists(loadpath string, version int64, client *elastic.Client) bool {
+	ctx := context.Background()
+	docID := fmt.Sprintf("v1@%d@%s", version, loadpath)
+	pkgDoc, _ := client.Get().
+		Index("goref").
+		Type("package").
+		Id(docID).
+		Do(ctx)
+	// TODO: handle errors better. Right now we assume that any
+	// error is a 404 and can be ignored safely.
+	return pkgDoc != nil
+}
+
+// LoadGraphToElastic loads all Packages and Refs from a PackageGraph
+// to the provided ES index.
 func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client) ([]*goref.Ref, error) {
 	ctx := context.Background()
 	missedRefs := make([]*goref.Ref, 0)
 	errs := make([]error, 0)
 
 	for _, p := range pg.Packages {
-		docID := p.DocumentID()
-		pkgDoc, err := client.Get().
-			Index("goref").
-			Type("package").
-			Id(docID).
-			Do(ctx)
+		log.Infof("Processing package %s", p.Path)
 
-		if err == nil {
-			return nil, err
-		}
-
-		if pkgDoc != nil {
-			log.Infof("Package %s already exists in this index.", docID)
+		if PackageExists(p.Path, p.Version, client) {
+			log.Infof("Package %s already exists in this index.", p)
 			continue
 		}
 
-		log.Infof("Creating Package document %s in the index", docID)
+		log.Infof("Creating Package %s in the index", p)
 		if _, err := client.Index().
 			Index("goref").
 			Type("package").
-			Id(docID).
+			Id(p.DocumentID()).
 			BodyJson(p).
 			Do(ctx); err != nil {
+			log.Infof("2 %s", err)
 			return nil, err
 		}
 
