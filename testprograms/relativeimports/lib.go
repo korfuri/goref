@@ -1,0 +1,3 @@
+package relativeimports
+
+func Foo() {}
