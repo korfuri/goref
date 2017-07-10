@@ -10,7 +10,7 @@ import (
 
 func TestDotImports(t *testing.T) {
 	const (
-		pkgpath  = "github.com/korfuri/goref/testprograms/dotimports"
+		pkgpath = "github.com/korfuri/goref/testprograms/dotimports"
 	)
 
 	pg := goref.NewPackageGraph(0)

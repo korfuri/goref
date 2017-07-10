@@ -10,7 +10,7 @@ import (
 
 func TestInterfaceImplMatrix(t *testing.T) {
 	const (
-		pkgpath  = "github.com/korfuri/goref/testprograms/interfaces"
+		pkgpath = "github.com/korfuri/goref/testprograms/interfaces"
 	)
 
 	pg := goref.NewPackageGraph(0)
