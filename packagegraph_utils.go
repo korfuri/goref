@@ -8,6 +8,10 @@ import (
 	"golang.org/x/tools/go/loader"
 )
 
+var (
+	epoch = time.Unix(0, 0)
+)
+
 // ConstantVersion returns a versionF function that always replies
 // with a constant version. Useful for experimenting, or for graphs
 // who load from an immutable snapshot of the Go universe.
@@ -38,6 +42,6 @@ func FileMTimeVersion(prog loader.Program, pi loader.PackageInfo) (int64, error)
 		return -1, fmt.Errorf("Unable to determine the version of package %s", pi.Pkg.Path())
 	}
 	// newestMTime - epoch gives us a duration which is an int64
-	// of nanoseconds since the Go epoch (1/1/1 00:00:00 UTC).
-	return int64(newestMTime.UTC().Sub(time.Time{})), nil
+	// of nanoseconds since the Unix epoch
+	return int64(newestMTime.UTC().Sub(epoch)), nil
 }
