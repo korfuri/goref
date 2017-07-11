@@ -32,9 +32,7 @@ func FileMTimeVersion(prog loader.Program, pi loader.PackageInfo) (int64, error)
 		if err != nil {
 			return -1, err
 		}
-		fmt.Printf("%s mtime: %v\n", filepath, fi.ModTime())
 		if fi.ModTime().After(newestMTime) {
-			fmt.Printf("win!\n")
 			newestMTime = fi.ModTime()
 		}
 	}
