@@ -49,12 +49,10 @@ should be incremented. The counter is an int64, so an elegant way to
 do this is to use the `time.Time()` at which you last sync'd your entire
 Go tree.
 
-TODO(korfuri): versions should be per-package, not per-graph. There
-should be a way to avoid duplicating all packages if only one package
-was updated. Probably a callback passed by the user code that returns
-the version for a given package, so that callback could look up the
-latest mtime of all files in that package. Need to find a convenient
-API.
+Note that the goref `PackageGraph` is not version-aware: it will only
+load one version of any given package. The version is purely meant for
+later indexing after the graph has been initialized and references
+have been created.
 
 If you'll be doing operations to a completely immutable tree of
 packages (typically, your PackageGraph remains in memory and is never
