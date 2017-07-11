@@ -48,18 +48,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// // TODO(korfuri): This is broken now that versions are //
-	// // per-package and generated after processing a package's
-	// // files.
-	// //
-	// // Filter out packages that already exist at this version in
-	// // the index.
-	// packages := make([]string, 0)
-	// for _, a := range args {
-	// 	if !elasticsearch.PackageExists(a, *version, client, *elasticIndex) {
-	// 		packages = append(packages, a)
-	// 	}
-	// }
 	packages := args
 	
 	// Index the requested packages
@@ -68,6 +56,8 @@ func main() {
 		log.Info("This index will include XTests.")
 	}
 	pg := goref.NewPackageGraph(goref.FileMTimeVersion)
+	// Set FilterF to skip any packages that exist in our index
+	pg.SetFilterF(elasticsearch.FilterF(client, *elasticIndex))
 	pg.LoadPrograms(packages, *includeTests)
 	log.Info("Computing the interface-implementation matrix.")
 	pg.ComputeInterfaceImplementationMatrix()

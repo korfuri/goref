@@ -45,3 +45,8 @@ func FileMTimeVersion(prog loader.Program, pi loader.PackageInfo) (int64, error)
 	// of nanoseconds since the Unix epoch
 	return int64(newestMTime.UTC().Sub(epoch)), nil
 }
+
+// FilterPass is a filterF function that always says yes.
+func FilterPass(loadpath string, version int64) bool {
+	return true
+}
