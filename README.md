@@ -16,9 +16,22 @@ answer questions such as:
 * What types implement this interface?
 * What interfaces are implemented by this type?
 
+## Usage
+
+Goref, unlike [guru](https://godoc.org/golang.org/x/tools/cmd/guru)
+relies in pre-indexing code to make searches faster. Guru is very
+convenient when developing in a modest-sized codebase, but calls like
+`guru callers -scope ...` are very slow and use a lot of
+memory. Instead, goref indexes code once and lets you search it
+quickly.
+
+### As a library
+
 Goref can be used as a library, see
 its [godoc](http://godoc.org/github.com/korfuri/goref) for usage
 information.
+
+### With ElasticSearch
 
 Goref can also be used to index code into ElasticSearch. This is
 currently a Work-In-Progress. The binary for this is at
