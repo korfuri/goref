@@ -11,7 +11,7 @@ import (
 func TestSimplePackage(t *testing.T) {
 	const (
 		pkgpath  = "github.com/korfuri/goref/testprograms/simple"
-		filepath = "testprograms/simple/main.go"
+		filepath = "github.com/korfuri/goref/testprograms/simple/main.go"
 	)
 
 	pg := goref.NewPackageGraph(goref.ConstantVersion(0))
@@ -30,5 +30,5 @@ func TestSimplePackage(t *testing.T) {
 	assert.Equal(t, 6, p.PosC)
 	assert.Equal(t, 6, p.EndL)
 	assert.Equal(t, 13, p.EndC)
-	assert.Contains(t, p.File, filepath)
+	assert.Equal(t, filepath, p.File)
 }

@@ -19,6 +19,9 @@ type PackageGraph struct {
 
 	// Map of file path to File objects.
 
+	// Slice of corpora that files may be loaded from
+	corpora []Corpus
+
 	// versionF is a function that returns the version of the
 	// provided Go package as an int64.
 	//
@@ -151,12 +154,24 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 		return nil
 	}
 
+	// Find what corpus this package was loaded from.
+	var corpus Corpus
+	if len(pi.Files) > 0 {
+		fpath := prog.Fset.File(pi.Files[0].Package).Name()
+		for _, c := range pg.corpora {
+			if c.Contains(fpath) {
+				corpus = c
+				break
+			}
+		}
+	}
+
 	// If pkg was a hardcoded package, return it now. Otherwise,
 	// create it.
 	if pkg != nil {
 		return pkg
 	}
-	pkg = newPackage(pi, prog.Fset, version)
+	pkg = newPackage(pi, prog.Fset, version, corpus)
 	pg.Packages[loadpath] = pkg
 
 	// Iterate over all files in that package.
@@ -207,8 +222,8 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 				if f.Name != nil {
 					r := &Ref{
 						RefType:      Import,
-						FromPosition: NewPosition(prog.Fset, imported.Pos(), imported.End()),
-						ToPosition:   NewPosition(prog.Fset, f.Name.Pos(), f.Name.End()),
+						FromPosition: NewPosition(corpus, prog.Fset, imported.Pos(), imported.End()),
+						ToPosition:   NewPosition(corpus, prog.Fset, f.Name.Pos(), f.Name.End()),
 						FromIdent:    importAs,
 						ToIdent:      i.Pkg.Name(),
 						FromPackage:  pkg,
@@ -234,10 +249,10 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 						RefType:      refTypeForIdent(prog, id),
 						ToIdent:      obj.Name(),
 						ToPackage:    foreignPkg,
-						ToPosition:   NewPosition(prog.Fset, obj.Pos(), NoPos),
+						ToPosition:   NewPosition(corpus, prog.Fset, obj.Pos(), NoPos),
 						FromIdent:    id.Name,
 						FromPackage:  pkg,
-						FromPosition: NewPosition(prog.Fset, id.Pos(), id.End()),
+						FromPosition: NewPosition(corpus, prog.Fset, id.Pos(), id.End()),
 					}
 
 					foreignPkg.InRefs = append(foreignPkg.InRefs, ref)
@@ -302,15 +317,14 @@ func (pg *PackageGraph) ComputeInterfaceImplementationMatrix() {
 						continue
 					}
 					if types.AssignableTo(typ, iface) {
-						fset := pb.Fset
 						r := &Ref{
 							RefType:      Implementation,
 							ToIdent:      iface.Obj().Name(),
 							ToPackage:    pa,
-							ToPosition:   NewPosition(fset, iface.Obj().Pos(), NoPos),
+							ToPosition:   NewPosition(pa.Corpus, pa.Fset, iface.Obj().Pos(), NoPos),
 							FromIdent:    typ.Obj().Name(),
 							FromPackage:  pb,
-							FromPosition: NewPosition(fset, typ.Obj().Pos(), NoPos),
+							FromPosition: NewPosition(pb.Corpus, pb.Fset, typ.Obj().Pos(), NoPos),
 						}
 						pa.InRefs = append(pa.InRefs, r)
 						pb.OutRefs = append(pb.OutRefs, r)
@@ -321,16 +335,15 @@ func (pg *PackageGraph) ComputeInterfaceImplementationMatrix() {
 						continue
 					}
 					if types.AssignableTo(ifaceb, iface) {
-						fset := pb.Fset
 						r := &Ref{
 							RefType:    Extension,
 							ToIdent:    iface.Obj().Name(),
 							ToPackage:  pa,
-							ToPosition: NewPosition(fset, ifaceb.Obj().Pos(), NoPos),
+							ToPosition: NewPosition(pa.Corpus, pa.Fset, ifaceb.Obj().Pos(), NoPos),
 
 							FromIdent:    ifaceb.Obj().Name(),
 							FromPackage:  pb,
-							FromPosition: NewPosition(fset, ifaceb.Obj().Pos(), NoPos),
+							FromPosition: NewPosition(pb.Corpus, pb.Fset, ifaceb.Obj().Pos(), NoPos),
 						}
 						pa.InRefs = append(pa.InRefs, r)
 						pb.OutRefs = append(pb.OutRefs, r)
@@ -347,6 +360,7 @@ func NewPackageGraph(versionF func(loader.Program, loader.PackageInfo) (int64, e
 		Packages: make(map[string]*Package),
 		versionF: versionF,
 		filterF:  FilterPass,
+		corpora:  DefaultCorpora(),
 	}
 	return p
 }

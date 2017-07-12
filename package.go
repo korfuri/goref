@@ -51,6 +51,9 @@ type Package struct {
 
 	// Path is the package's load path
 	Path string
+
+	// Corpus is the corpus that contains this package
+	Corpus
 }
 
 // String implements the Stringer interface
@@ -78,7 +81,7 @@ func (p Package) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func newPackage(pi *loader.PackageInfo, fset *token.FileSet, version int64) *Package {
+func newPackage(pi *loader.PackageInfo, fset *token.FileSet, version int64, corpus Corpus) *Package {
 	return &Package{
 		//PackageInfo:  pi,
 		Name:       pi.Pkg.Name(),
@@ -89,5 +92,6 @@ func newPackage(pi *loader.PackageInfo, fset *token.FileSet, version int64) *Pac
 		Fset:       fset,
 		Version:    version,
 		Path:       pi.Pkg.Path(),
+		Corpus:     corpus,
 	}
 }

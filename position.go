@@ -42,11 +42,11 @@ func (p Position) String() string {
 // NewPosition creates a Position from a token.FileSet and a pair of
 // Pos in that FileSet. It will panic if both Pos are not from the
 // same Filename.
-func NewPosition(fset *token.FileSet, pos, end token.Pos) Position {
+func NewPosition(corpus Corpus, fset *token.FileSet, pos, end token.Pos) Position {
 	ppos := fset.Position(pos)
 	if end == token.NoPos {
 		return Position{
-			File: ppos.Filename,
+			File: corpus.Rel(ppos.Filename),
 			PosL: ppos.Line,
 			PosC: ppos.Column,
 			EndL: -1,
@@ -58,7 +58,7 @@ func NewPosition(fset *token.FileSet, pos, end token.Pos) Position {
 		panic("Invalid pair of {pos,end} for NewPosition: pos and end come from different files!")
 	}
 	return Position{
-		File: ppos.Filename,
+		File: corpus.Rel(ppos.Filename),
 		PosL: ppos.Line,
 		PosC: ppos.Column,
 		EndL: pend.Line,
