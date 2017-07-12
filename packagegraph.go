@@ -18,7 +18,6 @@ type PackageGraph struct {
 	Packages map[string]*Package
 
 	// Map of file path to File objects.
-	Files map[string]*File
 
 	// versionF is a function that returns the version of the
 	// provided Go package as an int64.
@@ -95,15 +94,12 @@ func specialPackage(loadpath string) *Package {
 			Path:   "unsafe",
 			InRefs: make([]*Ref, 0),
 
-			// The Files map must be empty as no files define that package.
-			//
 			// There exists a src/unsafe/unsafe.go but it
 			// is not loaded by go/loader, and so
 			// referencing it would cause more issues than
 			// not (as no Fileset would contain its
-			// contents)
-			Files: make(map[string]*File),
-			Fset:  nil,
+			// contents). So the Fset is empty.
+			Fset: nil,
 
 			// We assume Unsafe has no interfaces, types or outrefs.
 			OutRefs:    make([]*Ref, 0),
@@ -132,7 +128,7 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 		return existingPkg
 	}
 	if specialPkg := specialPackage(loadpath); specialPkg != nil {
-		 pkg = specialPkg
+		pkg = specialPkg
 	}
 	// If we didn't find a hardcoded package, rely on versionF to
 	// tell us what version this package should have. Otherwise
@@ -154,7 +150,7 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 	if !pg.filterF(loadpath, version) {
 		return nil
 	}
-	
+
 	// If pkg was a hardcoded package, return it now. Otherwise,
 	// create it.
 	if pkg != nil {
@@ -165,15 +161,6 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 
 	// Iterate over all files in that package.
 	for _, f := range pi.Files {
-		// Get the File object to represent that file
-		filepath := prog.Fset.File(f.Package).Name()
-		ff := newFile(prog.Fset)
-
-		// Add this File to the maps for the Package and for
-		// the PackageGraph.
-		pkg.Files[filepath] = ff
-		pg.Files[filepath] = ff
-
 		// Iterate over all imports in that file
 		for _, imported := range f.Imports {
 			// Find the import's load-path and load that
@@ -356,14 +343,14 @@ func (pg *PackageGraph) ComputeInterfaceImplementationMatrix() {
 
 // NewPackageGraph returns a new, empty PackageGraph.
 func NewPackageGraph(versionF func(loader.Program, loader.PackageInfo) (int64, error)) *PackageGraph {
-	return &PackageGraph{
+	p := &PackageGraph{
 		Packages: make(map[string]*Package),
-		Files:    make(map[string]*File),
 		versionF: versionF,
 		filterF:  FilterPass,
 	}
+	return p
 }
 
-func (pg *PackageGraph) SetFilterF(f (func (string, int64) bool)) {
+func (pg *PackageGraph) SetFilterF(f func(string, int64) bool) {
 	pg.filterF = f
 }

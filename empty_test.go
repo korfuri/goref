@@ -15,7 +15,6 @@ func TestCanImportEmptyPackage(t *testing.T) {
 	pg := goref.NewPackageGraph(goref.ConstantVersion(0))
 	pg.LoadPrograms([]string{emptypkgpath}, false)
 	assert.Len(t, pg.Packages, 1)
-	assert.Len(t, pg.Files, 1)
 	assert.Empty(t, pg.Packages[emptypkgpath].InRefs)
 	assert.Empty(t, pg.Packages[emptypkgpath].OutRefs)
 }

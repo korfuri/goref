@@ -63,7 +63,6 @@ func main() {
 	pg.ComputeInterfaceImplementationMatrix()
 
 	log.Infof("%d packages in the graph.", len(pg.Packages))
-	log.Infof("%d files in the graph.", len(pg.Files))
 
 	// Load the indexed references into ElasticSearch
 	log.Info("Inserting references into ElasticSearch.")

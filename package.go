@@ -14,9 +14,6 @@ type Package struct {
 	// Name of the package
 	Name string
 
-	// Files is a map of paths to File objects that make up this package.
-	Files map[string]*File
-
 	// OutRefs and InRefs are slices of references. For OutRefs
 	// the Ref is to an identifier in another package. For InRefs
 	// the Ref is to an identifier within this package.  Most
@@ -85,7 +82,6 @@ func newPackage(pi *loader.PackageInfo, fset *token.FileSet, version int64) *Pac
 	return &Package{
 		//PackageInfo:  pi,
 		Name:       pi.Pkg.Name(),
-		Files:      make(map[string]*File),
 		OutRefs:    make([]*Ref, 0),
 		InRefs:     make([]*Ref, 0),
 		Interfaces: make([]*types.Named, 0),

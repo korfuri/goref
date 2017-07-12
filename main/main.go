@@ -41,17 +41,6 @@ func main() {
 	computeMatrixDone := time.Now()
 
 	log.Printf("%d packages in the graph\n", len(m.Packages))
-	log.Printf("%d files in the graph\n", len(m.Files))
-
-	log.Printf("Package `goref` has these files:\n")
-	for d := range m.Packages["github.com/korfuri/goref"].Files {
-		log.Printf("   - %s\n", d)
-	}
-
-	log.Printf("Package `fmt` has these files:\n")
-	for d := range m.Packages["fmt"].Files {
-		log.Printf("   - %s\n", d)
-	}
 
 	log.Printf("Here are the uses of objects in `goref`:\n")
 	for _, ref := range m.Packages["github.com/korfuri/goref"].InRefs {
