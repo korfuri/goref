@@ -14,6 +14,8 @@ func TestContains(t *testing.T) {
 	assert.False(t, goref.Corpus("/a/b/c").Contains("/a/b/d"))
 	assert.False(t, goref.Corpus("/a/b/c").Contains("/"))
 	assert.False(t, goref.Corpus("/a/b/c").Contains("/a/b/"))
+	assert.False(t, goref.Corpus("").Contains("/a/b"))
+	assert.False(t, goref.Corpus("").Contains("/a/b/"))
 }
 
 func TestRel(t *testing.T) {

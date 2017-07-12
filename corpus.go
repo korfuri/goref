@@ -22,6 +22,9 @@ func NewCorpus(basepath string) (Corpus, error) {
 // Contains returns whether the provided filepath exists under this
 // Corpus.
 func (c Corpus) Contains(fpath string) bool {
+	if string(c) == "" {
+		return false
+	}
 	rel, err := filepath.Rel(string(c), fpath)
 	if err != nil {
 		return false
