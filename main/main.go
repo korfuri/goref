@@ -88,7 +88,7 @@ func main() {
 
 func unused() interface{} {
 	b := log.Logger{}
-	log.Print(b)
+	b.Println("")
 	return log.Fatalf
 }
 
