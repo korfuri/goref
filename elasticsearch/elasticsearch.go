@@ -17,7 +17,7 @@ const (
 
 	// Types in the Elastic search index
 	packageType = "package"
-	refType = "ref"
+	refType     = "ref"
 )
 
 // PackageExists returns whether the provided loadpath + version tuple

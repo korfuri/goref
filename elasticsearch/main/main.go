@@ -49,7 +49,7 @@ func main() {
 	}
 
 	packages := args
-	
+
 	// Index the requested packages
 	log.Infof("Indexing packages: %v", packages)
 	if *includeTests {

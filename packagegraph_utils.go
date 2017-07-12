@@ -15,7 +15,7 @@ var (
 // ConstantVersion returns a versionF function that always replies
 // with a constant version. Useful for experimenting, or for graphs
 // who load from an immutable snapshot of the Go universe.
-func ConstantVersion(v int64) (func(loader.Program, loader.PackageInfo) (int64, error)) {
+func ConstantVersion(v int64) func(loader.Program, loader.PackageInfo) (int64, error) {
 	return func(prog loader.Program, pi loader.PackageInfo) (int64, error) {
 		return v, nil
 	}
