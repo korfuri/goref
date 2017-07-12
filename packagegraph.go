@@ -133,6 +133,7 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 	if specialPkg := specialPackage(loadpath); specialPkg != nil {
 		pkg = specialPkg
 	}
+
 	// If we didn't find a hardcoded package, rely on versionF to
 	// tell us what version this package should have. Otherwise
 	// use the hardcoded Package's Version.
@@ -145,13 +146,6 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 		}
 	} else {
 		version = pkg.Version
-	}
-
-	// Apply filterF to stop loading any package that doesn't pass
-	// the filter. Note that if a package was already present in
-	// the graph, filterF is not called.
-	if !pg.filterF(loadpath, version) {
-		return nil
 	}
 
 	// Find what corpus this package was loaded from.
@@ -173,6 +167,13 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 	}
 	pkg = newPackage(pi, prog.Fset, version, corpus)
 	pg.Packages[loadpath] = pkg
+
+	// Apply filterF to stop loading any package that doesn't pass
+	// the filter. Note that if a package was already present in
+	// the graph, filterF is not called.
+	if !pg.filterF(loadpath, version) {
+		return pkg
+	}
 
 	// Iterate over all files in that package.
 	for _, f := range pi.Files {
