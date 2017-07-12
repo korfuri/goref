@@ -43,14 +43,12 @@ func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index str
 	errs := make([]error, 0)
 
 	for _, p := range pg.Packages {
-		log.Infof("Processing package %s", p.Path)
-
 		if PackageExists(p.Path, p.Version, client, index) {
 			log.Infof("Package %s already exists in this index.", p)
 			continue
 		}
 
-		log.Infof("Creating Package %s in the index", p)
+		log.Debugf("Creating Package %s in the index", p)
 		if _, err := client.Index().
 			Index(index).
 			Type(packageType).
@@ -61,7 +59,6 @@ func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index str
 		}
 
 		for _, r := range p.OutRefs {
-			log.Infof("Creating Ref document [%s] in the index", r)
 			refDoc, err := client.Index().
 				Index(index).
 				Type(refType).
@@ -70,9 +67,9 @@ func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index str
 			if err != nil {
 				missedRefs = append(missedRefs, r)
 				errs = append(errs, err)
-				log.Infof("Create Ref document failed with err:[%s] for Ref:[%s]", err, r)
+				log.Debugf("Create Ref document failed with err:[%s] for Ref:[%s]", err, r)
 			} else {
-				log.Infof("Created Ref document with docID:[%s] for Ref:[%s]", refDoc.Id, r)
+				log.Debugf("Created Ref document with docID:[%s] for Ref:[%s]", refDoc.Id, r)
 			}
 		}
 	}
