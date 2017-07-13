@@ -366,6 +366,7 @@ func NewPackageGraph(versionF func(loader.Program, loader.PackageInfo) (int64, e
 	return p
 }
 
+// SetFilterF sets the filterF for this PackageGraph
 func (pg *PackageGraph) SetFilterF(f func(string, int64) bool) {
 	pg.filterF = f
 }
