@@ -16,9 +16,16 @@ const (
 	maxErrorsReported = 20
 
 	// Types in the Elastic search index
-	packageType = "package"
-	refType     = "ref"
+	PackageType = "package"
+	RefType     = "ref"
+	FileType    = "file"
 )
+
+// File represents a mapping of a file in a package
+type File struct {
+	Filename string `json:"filename"`
+	Package string `json:"package"`
+}
 
 // PackageExists returns whether the provided loadpath + version tuple
 // exists in this index.
@@ -27,7 +34,7 @@ func PackageExists(loadpath string, version int64, client *elastic.Client, index
 	docID := fmt.Sprintf("v1@%d@%s", version, loadpath)
 	pkgDoc, _ := client.Get().
 		Index(index).
-		Type(packageType).
+		Type(PackageType).
 		Id(docID).
 		Do(ctx)
 	// TODO: handle errors better. Right now we assume that any
@@ -37,9 +44,10 @@ func PackageExists(loadpath string, version int64, client *elastic.Client, index
 
 // LoadGraphToElastic loads all Packages and Refs from a PackageGraph
 // to the provided ES index.
-func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index string) ([]*goref.Ref, error) {
+func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index string) error {
 	ctx := context.Background()
 	missedRefs := make([]*goref.Ref, 0)
+	missedFiles := make([]string, 0)
 	errs := make([]error, 0)
 
 	for _, p := range pg.Packages {
@@ -51,17 +59,37 @@ func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index str
 		log.Debugf("Creating Package %s in the index", p)
 		if _, err := client.Index().
 			Index(index).
-			Type(packageType).
+			Type(PackageType).
 			Id(p.DocumentID()).
 			BodyJson(p).
 			Do(ctx); err != nil {
-			return nil, err
+			return err
 		}
+
+		for _, f := range p.Files {
+			entry := File{
+				Filename: f,
+				Package: p.Name,
+			}
+			refDoc, err := client.Index().
+				Index(index).
+				Type(FileType).
+				BodyJson(entry).
+				Do(ctx)
+			if err != nil {
+				missedFiles = append(missedFiles, f)
+				errs = append(errs, err)
+				log.Debugf("Create file document failed with err:[%s] for file:[%s]", err, f)
+			} else {
+				log.Debugf("Created file document with docID:[%s] for file:[%s]", refDoc.Id, f)
+			}
+		}
+
 
 		for _, r := range p.OutRefs {
 			refDoc, err := client.Index().
 				Index(index).
-				Type(refType).
+				Type(RefType).
 				BodyJson(r).
 				Do(ctx)
 			if err != nil {
@@ -73,8 +101,8 @@ func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index str
 			}
 		}
 	}
-	if len(missedRefs) > 0 {
-		errStr := fmt.Sprintf("%d refs couldn't be imported. Errors were:\n", len(missedRefs))
+	if len(errs) > 0 {
+		errStr := fmt.Sprintf("%d entries couldn't be imported. Errors were:\n", len(missedRefs))
 		c := 0
 		for _, e := range errs {
 			errStr = errStr + e.Error() + "\n"
@@ -83,7 +111,7 @@ func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index str
 				break
 			}
 		}
-		return missedRefs, errors.New(errStr)
+		return errors.New(errStr)
 	}
-	return nil, nil
+	return nil
 }

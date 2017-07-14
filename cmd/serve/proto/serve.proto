@@ -23,6 +23,15 @@ message GetAnnotationsResponse {
   repeated goref.proto.Ref annotation = 2;
 }
 
+message GetFilesRequest {
+  string package = 1;
+}
+
+message GetFilesResponse {
+  string package = 1;
+  repeated string filename = 2;
+}
+
 service Goref {
   rpc GetFile(GetFileRequest) returns (GetFileResponse) {
     option (google.api.http) = {
@@ -33,6 +42,12 @@ service Goref {
   rpc GetAnnotations(GetAnnotationsRequest) returns (GetAnnotationsResponse) {
     option (google.api.http) = {
       get: "/v1/goref/annotations/{path=**}"
+    };
+  }
+
+  rpc GetFiles(GetFilesRequest) returns (GetFilesResponse) {
+    option (google.api.http) = {
+      get: "/v1/goref/files/{package=**}"
     };
   }
 }

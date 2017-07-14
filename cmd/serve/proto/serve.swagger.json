@@ -62,6 +62,30 @@
           "Goref"
         ]
       }
+    },
+    "/v1/goref/files/{package}": {
+      "get": {
+        "operationId": "GetFiles",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/serveGetFilesResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "package",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Goref"
+        ]
+      }
     }
   },
   "definitions": {
@@ -155,6 +179,20 @@
         },
         "contents": {
           "type": "string"
+        }
+      }
+    },
+    "serveGetFilesResponse": {
+      "type": "object",
+      "properties": {
+        "package": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }

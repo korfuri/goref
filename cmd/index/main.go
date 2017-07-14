@@ -66,8 +66,8 @@ func main() {
 
 	// Load the indexed references into ElasticSearch
 	log.Info("Inserting references into ElasticSearch.")
-	if missed, err := elasticsearch.LoadGraphToElastic(*pg, client, *elasticIndex); err != nil {
-		log.Fatalf("Couldn't load %d references. Error: %s", len(missed), err)
+	if err := elasticsearch.LoadGraphToElastic(*pg, client, *elasticIndex); err != nil {
+		log.Fatalf("Couldn't load some references. Error: %s", err)
 	}
 	log.Info("Done, bye.")
 }

@@ -14,6 +14,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/korfuri/goref"
+	gorefelastic "github.com/korfuri/goref/elasticsearch"
 	pb "github.com/korfuri/goref/cmd/serve/proto"
 	gorefpb "github.com/korfuri/goref/proto"
 	"google.golang.org/grpc"
@@ -54,7 +55,7 @@ func (s server) GetAnnotations(ctx context.Context, req *pb.GetAnnotationsReques
 	action := s.client.Search().
 		Index(*elasticIndex).
 		Query(termQuery).
-		//Sort("user.keyword", true).
+		Type(gorefelastic.RefType).
 		From(0).Size(1000).
 		Pretty(false)
 	searchResult, err := action.Do(ctx)
@@ -69,6 +70,31 @@ func (s server) GetAnnotations(ctx context.Context, req *pb.GetAnnotationsReques
 		var r gorefpb.Ref
 		json.Unmarshal(*hit.Source, &r)
 		res.Annotation = append(res.Annotation, &r)
+	}
+
+	return res, nil
+}
+
+func (s server) GetFiles(ctx context.Context, req *pb.GetFilesRequest) (*pb.GetFilesResponse, error) {
+	termQuery := elastic.NewTermQuery("package.keyword", req.Package)
+	action := s.client.Search().
+		Index(*elasticIndex).
+		Query(termQuery).
+		Type(gorefelastic.FileType).
+		From(0).Size(1000).
+		Pretty(false)
+	searchResult, err := action.Do(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &pb.GetFilesResponse{
+		Package: req.Package,
+	}
+	for _, hit := range searchResult.Hits.Hits {
+		var f gorefelastic.File
+		json.Unmarshal(*hit.Source, &f)
+		res.Filename = append(res.Filename, f.Filename)
 	}
 
 	return res, nil
