@@ -3,6 +3,8 @@ package goref
 import (
 	"encoding/json"
 	"fmt"
+
+	pb "github.com/korfuri/goref/proto"
 )
 
 // A Ref is a reference to an identifier whose definition lives in
@@ -42,29 +44,23 @@ func (r *Ref) String() string {
 
 // MarshalJSON implements encoding/json.Marshaler interface
 func (r Ref) MarshalJSON() ([]byte, error) {
-	type location struct {
-		Position Position `json:"position"`
-		Pkg      string   `json:"package"`
-		Ident    string   `json:"ident"`
-	}
-	type refForJSON struct {
-		From    location `json:"from"`
-		To      location `json:"to"`
-		Typ     RefType  `json:"type"`
-		Version int64    `json:"version"`
-	}
-	return json.Marshal(refForJSON{
+	return json.Marshal(r.ToProto())
+}
+
+// ToProto marshals a Ref as a pb.Ref
+func (r Ref) ToProto() *pb.Ref {
+	return &pb.Ref{
 		Version: r.FromPackage.Version,
-		From: location{
-			Position: r.FromPosition,
-			Pkg:      r.FromPackage.Path,
+		From: &pb.Location{
+			Position: r.FromPosition.ToProto(),
+			Package:  r.FromPackage.Path,
 			Ident:    r.FromIdent,
 		},
-		To: location{
-			Position: r.ToPosition,
-			Pkg:      r.ToPackage.Path,
+		To: &pb.Location{
+			Position: r.ToPosition.ToProto(),
+			Package:  r.ToPackage.Path,
 			Ident:    r.ToIdent,
 		},
-		Typ: r.RefType,
-	})
+		Type: pb.Type(r.RefType),
+	}
 }

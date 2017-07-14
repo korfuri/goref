@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/token"
+
+	pb "github.com/korfuri/goref/proto"
 )
 
 // A Position is similar to token.Position in that it gives an
@@ -82,5 +84,16 @@ func (p Position) MarshalJSON() ([]byte, error) {
 		})
 	} else {
 		return json.Marshal(withend(p))
+	}
+}
+
+// ToProto marshals a Position as a pb.Position
+func (p Position) ToProto() *pb.Position {
+	return &pb.Position{
+		Filename:  p.File,
+		StartLine: int32(p.PosL),
+		StartCol:  int32(p.PosC),
+		EndLine:   int32(p.EndL),
+		EndCol:    int32(p.EndC),
 	}
 }
