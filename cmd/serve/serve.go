@@ -14,8 +14,8 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/korfuri/goref"
-	gorefelastic "github.com/korfuri/goref/elasticsearch"
 	pb "github.com/korfuri/goref/cmd/serve/proto"
+	gorefelastic "github.com/korfuri/goref/elasticsearch"
 	gorefpb "github.com/korfuri/goref/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -28,7 +28,7 @@ const (
 )
 
 var (
-	elasticUrl = flag.String("elastic_url", "http://localhost:9200",
+	elasticURL = flag.String("elastic_url", "http://localhost:9200",
 		"URL of the ElasticSearch cluster.")
 	elasticUsername = flag.String("elastic_user", "elastic",
 		"Username to authenticate with ElasticSearch.")
@@ -171,7 +171,7 @@ func main() {
 	flag.Parse()
 	grpcReady := make(chan struct{})
 	ec, err := elastic.NewClient(
-		elastic.SetURL(*elasticUrl),
+		elastic.SetURL(*elasticURL),
 		elastic.SetBasicAuth(*elasticUsername, *elasticPassword))
 	if err != nil {
 		panic(err)

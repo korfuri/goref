@@ -18,7 +18,7 @@ const (
 var (
 	includeTests = flag.Bool("include_tests", true,
 		"Whether XTest packages should be included in the index.")
-	elasticUrl = flag.String("elastic_url", "http://localhost:9200",
+	elasticURL = flag.String("elastic_url", "http://localhost:9200",
 		"URL of the ElasticSearch cluster.")
 	elasticUsername = flag.String("elastic_user", "elastic",
 		"Username to authenticate with ElasticSearch.")
@@ -42,7 +42,7 @@ func main() {
 
 	// Create a client
 	client, err := elastic.NewClient(
-		elastic.SetURL(*elasticUrl),
+		elastic.SetURL(*elasticURL),
 		elastic.SetBasicAuth(*elasticUsername, *elasticPassword))
 	if err != nil {
 		log.Fatal(err)

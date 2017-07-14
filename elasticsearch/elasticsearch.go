@@ -24,7 +24,7 @@ const (
 // File represents a mapping of a file in a package
 type File struct {
 	Filename string `json:"filename"`
-	Package string `json:"package"`
+	Package  string `json:"package"`
 }
 
 // PackageExists returns whether the provided loadpath + version tuple
@@ -69,7 +69,7 @@ func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index str
 		for _, f := range p.Files {
 			entry := File{
 				Filename: f,
-				Package: p.Name,
+				Package:  p.Name,
 			}
 			refDoc, err := client.Index().
 				Index(index).
@@ -84,7 +84,6 @@ func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index str
 				log.Debugf("Created file document with docID:[%s] for file:[%s]", refDoc.Id, f)
 			}
 		}
-
 
 		for _, r := range p.OutRefs {
 			refDoc, err := client.Index().
