@@ -123,7 +123,7 @@ func specialPackage(loadpath string) *Package {
 // Graph. If the package was already loaded, it returns early. It
 // always returns the Package object for the loaded package.
 func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *loader.PackageInfo) *Package {
-	var pkg *Package = nil
+	var pkg *Package
 	// First find whether we already know about this package,
 	// either because it's already in the graph (then return it)
 	// or because it has a hardcoded definition.

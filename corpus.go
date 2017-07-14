@@ -65,7 +65,8 @@ func (c Corpus) Rel(fpath string) string {
 	return rel
 }
 
-// Returns the set of default corpora based on GOROOT and GOPATH.
+// DefaultCorpora returns the set of default corpora based on GOROOT
+// and GOPATH.
 func DefaultCorpora() []Corpus {
 	srcdirs := build.Default.SrcDirs()
 	corpora := make([]Corpus, len(srcdirs))

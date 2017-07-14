@@ -104,6 +104,6 @@ func refTypeForIdent(prog *loader.Program, id *ast.Ident) RefType {
 }
 
 // MarshalJSON implements encoding/json.Marshaler interface
-func (r RefType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(r.String())
+func (rt RefType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(rt.String())
 }

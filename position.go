@@ -82,9 +82,8 @@ func (p Position) MarshalJSON() ([]byte, error) {
 			PosL: p.PosL,
 			PosC: p.PosC,
 		})
-	} else {
-		return json.Marshal(withend(p))
 	}
+	return json.Marshal(withend(p))
 }
 
 // ToProto marshals a Position as a pb.Position
