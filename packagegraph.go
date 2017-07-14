@@ -177,6 +177,9 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 
 	// Iterate over all files in that package.
 	for _, f := range pi.Files {
+		// Add that file to the package's file list
+		pkg.Files = append(pkg.Files, corpus.Rel(prog.Fset.File(f.Package).Name()))
+
 		// Iterate over all imports in that file
 		for _, imported := range f.Imports {
 			// Find the import's load-path and load that

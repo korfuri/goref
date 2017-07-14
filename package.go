@@ -14,6 +14,9 @@ type Package struct {
 	// Name of the package
 	Name string
 
+	// Files in this package
+	Files []string
+
 	// OutRefs and InRefs are slices of references. For OutRefs
 	// the Ref is to an identifier in another package. For InRefs
 	// the Ref is to an identifier within this package.  Most

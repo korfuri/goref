@@ -20,6 +20,7 @@ func TestSimplePackage(t *testing.T) {
 	assert.Contains(t, pg.Packages, "fmt")
 	pkg := pg.Packages[pkgpath]
 	assert.Empty(t, pkg.InRefs)
+	assert.Contains(t, pkg.Files, filepath)
 
 	testutils.AssertPresenceOfRef(t, pg.Packages["fmt"], "fmt", pkg, "fmt", goref.Import, true)
 
