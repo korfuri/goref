@@ -3,6 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/korfuri/goref?status.svg)](http://godoc.org/github.com/korfuri/goref)
 [![Build Status](https://travis-ci.org/korfuri/goref.svg?branch=master)](https://travis-ci.org/korfuri/goref)
 [![Coverage Status](https://coveralls.io/repos/github/korfuri/goref/badge.svg?branch=master)](https://coveralls.io/github/korfuri/goref?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/korfuri/goref)](https://goreportcard.com/report/github.com/korfuri/goref)
 
 Goref is a Go package that analyzes a set of Go programs, starting
 from one or more `main` packages, and computes the inverse of the
