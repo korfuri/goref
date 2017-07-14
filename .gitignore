@@ -1,6 +1,3 @@
-# Ignore binaries
-main/main
-
 # Created by https://www.gitignore.io/api/go,vim,emacs
 
 ### Emacs ###
@@ -80,7 +77,11 @@ Session.vim
 tags
 
 # End of https://www.gitignore.io/api/go,vim,emacs
+
+# Ignore TODO.md
 TODO.md
-cmd/serve/serve
-elasticsearch/main/main
+
+# Ignore binaries
 main/main
+cmd/serve/serve
+cmd/index/index
