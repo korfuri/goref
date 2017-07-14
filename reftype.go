@@ -17,7 +17,7 @@ const (
 	// Instantiation of a type in another package.
 	Instantiation = iota
 
-	// Call of a function in another pacakge.
+	// Call of a function in another package.
 	Call
 
 	// Implementation of an interface by a type.
