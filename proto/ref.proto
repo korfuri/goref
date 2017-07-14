@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package goref.proto;
+
+message Ref {
+  int64 version = 1;
+  Location from = 2;
+  Location to = 3;
+  Type type = 4;
+}
+
+message Location {
+  Position position = 1;
+  string package = 2;
+  string ident = 3;
+}
+
+message Position {
+  string filename = 1;
+  int32 start_line = 2;
+  int32 start_col = 3;
+  int32 end_line = 4;
+  int32 end_col = 5;
+}
+
+enum Type {
+  Instantiation = 0;
+  Call = 1;
+  Implementation = 2;
+  Extension = 3;
+  Import = 4;
+  Reference = 5;
+}

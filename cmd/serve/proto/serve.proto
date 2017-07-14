@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "google/api/annotations.proto";
+import "github.com/korfuri/goref/proto/ref.proto";
 
 package serve;
 
@@ -19,31 +20,7 @@ message GetAnnotationsRequest {
 
 message GetAnnotationsResponse {
   string path = 1;
-  repeated Annotation annotation = 2;
-}
-
-message Annotation {
-  Location from = 1;
-  Location to = 2;
-  Type type = 3;
-}
-
-message Location {
-  string package = 1;
-  string filename = 2;
-  int64 start_line = 3;
-  int64 start_column = 4;
-  int64 end_line = 5;
-  int64 end_column = 6;
-}
-
-enum Type {
-  Instantiation = 0;
-  Call = 1;
-  Implementation = 2;
-  Extension = 3;
-  Import = 4;
-  Reference = 5;
+  repeated goref.proto.Ref annotation = 2;
 }
 
 service Goref {

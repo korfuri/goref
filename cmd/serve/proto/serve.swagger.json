@@ -65,17 +65,71 @@
     }
   },
   "definitions": {
-    "serveAnnotation": {
+    "gorefprotoLocation": {
       "type": "object",
       "properties": {
+        "position": {
+          "$ref": "#/definitions/protoPosition"
+        },
+        "package": {
+          "type": "string"
+        },
+        "ident": {
+          "type": "string"
+        }
+      }
+    },
+    "gorefprotoType": {
+      "type": "string",
+      "enum": [
+        "Instantiation",
+        "Call",
+        "Implementation",
+        "Extension",
+        "Import",
+        "Reference"
+      ],
+      "default": "Instantiation"
+    },
+    "protoPosition": {
+      "type": "object",
+      "properties": {
+        "filename": {
+          "type": "string"
+        },
+        "start_line": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "start_col": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "end_line": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "end_col": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "protoRef": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "format": "int64"
+        },
         "from": {
-          "$ref": "#/definitions/serveLocation"
+          "$ref": "#/definitions/gorefprotoLocation"
         },
         "to": {
-          "$ref": "#/definitions/serveLocation"
+          "$ref": "#/definitions/gorefprotoLocation"
         },
         "type": {
-          "$ref": "#/definitions/serveType"
+          "$ref": "#/definitions/gorefprotoType"
         }
       }
     },
@@ -88,7 +142,7 @@
         "annotation": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/serveAnnotation"
+            "$ref": "#/definitions/protoRef"
           }
         }
       }
@@ -103,45 +157,6 @@
           "type": "string"
         }
       }
-    },
-    "serveLocation": {
-      "type": "object",
-      "properties": {
-        "package": {
-          "type": "string"
-        },
-        "filename": {
-          "type": "string"
-        },
-        "start_line": {
-          "type": "string",
-          "format": "int64"
-        },
-        "start_column": {
-          "type": "string",
-          "format": "int64"
-        },
-        "end_line": {
-          "type": "string",
-          "format": "int64"
-        },
-        "end_column": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
-    "serveType": {
-      "type": "string",
-      "enum": [
-        "Instantiation",
-        "Call",
-        "Implementation",
-        "Extension",
-        "Import",
-        "Reference"
-      ],
-      "default": "Instantiation"
     }
   }
 }
