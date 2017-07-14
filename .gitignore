@@ -80,3 +80,7 @@ Session.vim
 tags
 
 # End of https://www.gitignore.io/api/go,vim,emacs
+TODO.md
+cmd/serve/serve
+elasticsearch/main/main
+main/main
