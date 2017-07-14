@@ -1,0 +1,147 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "serve.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/goref/annotations/{path}": {
+      "get": {
+        "operationId": "GetAnnotations",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/serveGetAnnotationsResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Goref"
+        ]
+      }
+    },
+    "/v1/goref/file/{path}": {
+      "get": {
+        "operationId": "GetFile",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/serveGetFileResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Goref"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "serveAnnotation": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "$ref": "#/definitions/serveLocation"
+        },
+        "to": {
+          "$ref": "#/definitions/serveLocation"
+        },
+        "type": {
+          "$ref": "#/definitions/serveType"
+        }
+      }
+    },
+    "serveGetAnnotationsResponse": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "annotation": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/serveAnnotation"
+          }
+        }
+      }
+    },
+    "serveGetFileResponse": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "contents": {
+          "type": "string"
+        }
+      }
+    },
+    "serveLocation": {
+      "type": "object",
+      "properties": {
+        "package": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "start_line": {
+          "type": "string",
+          "format": "int64"
+        },
+        "start_column": {
+          "type": "string",
+          "format": "int64"
+        },
+        "end_line": {
+          "type": "string",
+          "format": "int64"
+        },
+        "end_column": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "serveType": {
+      "type": "string",
+      "enum": [
+        "Instantiation",
+        "Call",
+        "Implementation",
+        "Extension",
+        "Import",
+        "Reference"
+      ],
+      "default": "Instantiation"
+    }
+  }
+}

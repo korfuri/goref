@@ -3,6 +3,7 @@ package goref
 import (
 	"fmt"
 	"go/build"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -30,6 +31,25 @@ func (c Corpus) Contains(fpath string) bool {
 		return false
 	}
 	return !strings.HasPrefix(rel, "../") && rel != ".."
+}
+
+// ContainsRel returns whether the provided relpath exists under this
+// Corpus.
+func (c Corpus) ContainsRel(rel string) bool {
+	fpath := c.Abs(rel)
+	fi, err := os.Stat(fpath)
+	if err != nil {
+		return false
+	}
+	return (fi.Mode() & os.ModeType) == 0
+}
+
+// Abs returns the absolute path of a file within a Corpus.
+func (c Corpus) Abs(rel string) string {
+	if string(c) == "" {
+		return ""
+	}
+	return filepath.Join(string(c), rel)
 }
 
 // Rel returns the relative path of a file within a Corpus.
