@@ -20,7 +20,7 @@ type PackageGraph struct {
 	// Map of file path to File objects.
 
 	// Slice of corpora that files may be loaded from
-	corpora []Corpus
+	Corpora []Corpus
 
 	// versionF is a function that returns the version of the
 	// provided Go package as an int64.
@@ -152,7 +152,7 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 	var corpus Corpus
 	if len(pi.Files) > 0 {
 		fpath := prog.Fset.File(pi.Files[0].Package).Name()
-		for _, c := range pg.corpora {
+		for _, c := range pg.Corpora {
 			if c.Contains(fpath) {
 				corpus = c
 				break
@@ -364,7 +364,7 @@ func NewPackageGraph(versionF func(loader.Program, loader.PackageInfo) (int64, e
 		Packages: make(map[string]*Package),
 		versionF: versionF,
 		filterF:  FilterPass,
-		corpora:  DefaultCorpora(),
+		Corpora:  DefaultCorpora(),
 	}
 	return p
 }

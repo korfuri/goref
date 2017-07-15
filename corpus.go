@@ -52,6 +52,14 @@ func (c Corpus) Abs(rel string) string {
 	return filepath.Join(string(c), rel)
 }
 
+// Pkg returns the package containing this file.
+func (c Corpus) Pkg(rel string) string {
+	if string(c) == "" || rel == "" {
+		return ""
+	}
+	return filepath.Dir(string(rel))
+}
+
 // Rel returns the relative path of a file within a Corpus.
 // If the string does not belong to the corpus, it returns fpath.
 func (c Corpus) Rel(fpath string) string {
