@@ -86,6 +86,37 @@
           "Goref"
         ]
       }
+    },
+    "/v1/goref/packages": {
+      "get": {
+        "operationId": "GetPackages",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/serveGetPackagesResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "prefix",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "includeVendor",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          }
+        ],
+        "tags": [
+          "Goref"
+        ]
+      }
     }
   },
   "definitions": {
@@ -189,6 +220,17 @@
           "type": "string"
         },
         "filename": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "serveGetPackagesResponse": {
+      "type": "object",
+      "properties": {
+        "package": {
           "type": "array",
           "items": {
             "type": "string"

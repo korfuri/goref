@@ -12,10 +12,10 @@ import (
 // Package represents a Go Package, including its dependencies.
 type Package struct {
 	// Name of the package
-	Name string
+	Name string `json:"-"`
 
 	// Files in this package
-	Files []string
+	Files []string `json:"-"`
 
 	// OutRefs and InRefs are slices of references. For OutRefs
 	// the Ref is to an identifier in another package. For InRefs
@@ -24,8 +24,8 @@ type Package struct {
 	// FromPackage are the same, but some do such as
 	// Implementation. This means that a ref can exist in both
 	// OutRefs and InRefs of the same package.
-	OutRefs []*Ref
-	InRefs  []*Ref
+	OutRefs []*Ref `json:"-"`
+	InRefs  []*Ref `json:"-"`
 
 	// Interfaces is the list of interface types in this package.
 	//
@@ -35,7 +35,7 @@ type Package struct {
 	// can't be exported.
 	//
 	// Interfaces equivalent to interface{} are excluded.
-	Interfaces []*types.Named
+	Interfaces []*types.Named `json:"-"`
 
 	// Impls is the list of non-interface types in this package.
 	//
@@ -43,20 +43,20 @@ type Package struct {
 	//
 	// Only named types matter, because an unnamed type can't have
 	// methods.
-	Impls []*types.Named
+	Impls []*types.Named `json:"-"`
 
 	// Fset is a reference to the token.FileSet that loaded this
 	// package.
-	Fset *token.FileSet
+	Fset *token.FileSet `json:"-"`
 
 	// Version is the version of the package that was loaded.
-	Version int64
+	Version int64 `json:"version"`
 
 	// Path is the package's load path
-	Path string
+	Path string `json:"loadpath"`
 
 	// Corpus is the corpus that contains this package
-	Corpus
+	Corpus `json:"-"`
 }
 
 // String implements the Stringer interface

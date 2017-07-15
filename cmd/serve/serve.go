@@ -100,6 +100,31 @@ func (s server) GetFiles(ctx context.Context, req *pb.GetFilesRequest) (*pb.GetF
 	return res, nil
 }
 
+func (s server) GetPackages(ctx context.Context, req *pb.GetPackagesRequest) (*pb.GetPackagesResponse, error) {
+	action := s.client.Search().
+		Index(*elasticIndex).
+		Type(gorefelastic.PackageType).
+		From(0).Size(1000).
+		Pretty(false)
+	if req.Prefix != "" {
+		query := elastic.NewPrefixQuery("loadpath.keyword", req.Prefix)
+		action = action.Query(query)
+	}
+	searchResult, err := action.Do(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &pb.GetPackagesResponse{}
+	for _, hit := range searchResult.Hits.Hits {
+		var p goref.Package
+		json.Unmarshal(*hit.Source, &p)
+		res.Package = append(res.Package, p.Path)
+	}
+
+	return res, nil
+}
+
 func (s server) findCorpus(fpath string) (goref.Corpus, error) {
 	if filepath.Ext(fpath) != ".go" {
 		return goref.Corpus(""), fmt.Errorf("Not found: invalid extension")

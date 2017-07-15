@@ -32,6 +32,15 @@ message GetFilesResponse {
   repeated string filename = 2;
 }
 
+message GetPackagesRequest {
+  string prefix = 1;
+  bool includeVendor = 2;
+}
+
+message GetPackagesResponse {
+  repeated string package = 1;
+}
+
 service Goref {
   rpc GetFile(GetFileRequest) returns (GetFileResponse) {
     option (google.api.http) = {
@@ -48,6 +57,12 @@ service Goref {
   rpc GetFiles(GetFilesRequest) returns (GetFilesResponse) {
     option (google.api.http) = {
       get: "/v1/goref/files/{package=**}"
+    };
+  }
+
+  rpc GetPackages(GetPackagesRequest) returns (GetPackagesResponse) {
+    option (google.api.http) = {
+      get: "/v1/goref/packages"
     };
   }
 }
