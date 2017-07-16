@@ -14,7 +14,7 @@ func TestVendoredPackage(t *testing.T) {
 	)
 
 	pg := goref.NewPackageGraph(goref.ConstantVersion(0))
-	pg.LoadPrograms([]string{pkgpath}, false)
+	pg.LoadPackages([]string{pkgpath}, false)
 	assert.Contains(t, pg.Packages, pkgpath)
 	assert.Contains(t, pg.Packages, "github.com/korfuri/goref/testprograms/vendored/vendor/github.com/korfuri/somedep")
 }

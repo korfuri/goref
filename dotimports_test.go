@@ -14,7 +14,7 @@ func TestDotImports(t *testing.T) {
 	)
 
 	pg := goref.NewPackageGraph(goref.ConstantVersion(0))
-	pg.LoadPrograms([]string{pkgpath}, true)
+	pg.LoadPackages([]string{pkgpath}, true)
 	assert.Contains(t, pg.Packages, pkgpath)
 	assert.Contains(t, pg.Packages, pkgpath+"/lib")
 	pkg := pg.Packages[pkgpath]

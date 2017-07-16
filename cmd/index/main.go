@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	Usage = `elastic_goref -include_tests <true|false> \\
+	// Usage help line
+	Usage = `index -include_tests <true|false> \\
   -elastic_url http://localhost:9200/ -elastic_user elastic -elastic_password changeme \\
   github.com/korfuri/goref github.com/korfuri/goref/elastic/main`
 )
@@ -58,7 +59,7 @@ func main() {
 	pg := goref.NewPackageGraph(goref.FileMTimeVersion)
 	// Set FilterF to skip any packages that exist in our index
 	pg.SetFilterF(elasticsearch.FilterF(client, *elasticIndex))
-	pg.LoadPrograms(packages, *includeTests)
+	pg.LoadPackages(packages, *includeTests)
 	log.Info("Computing the interface-implementation matrix.")
 	pg.ComputeInterfaceImplementationMatrix()
 

@@ -157,7 +157,7 @@ func main() {
 
 	// Index the requested packages
 	pg := goref.NewPackageGraph(goref.FileMTimeVersion)
-	pg.LoadPrograms(args, *includeTests)
+	pg.LoadPackages(args, *includeTests)
 
 	grpcReady := make(chan struct{})
 	go runGateway(grpcReady)

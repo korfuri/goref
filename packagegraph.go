@@ -287,11 +287,11 @@ func (pg *PackageGraph) loadPackage(prog *loader.Program, loadpath string, pi *l
 	return pkg
 }
 
-// LoadPrograms loads the specified packages and their transitive
+// LoadPackages loads the specified packages and their transitive
 // dependencies, as well as XTests (as defined by go/loader) if
 // includeTests is true.  It may be called multiple times to load
 // multiple package sets in the PackageGraph.
-func (pg *PackageGraph) LoadPrograms(packages []string, includeTests bool) error {
+func (pg *PackageGraph) LoadPackages(packages []string, includeTests bool) error {
 	conf := loader.Config{}
 	if _, err := conf.FromArgs(packages, includeTests); err != nil {
 		return err
