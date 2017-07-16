@@ -120,11 +120,11 @@
     }
   },
   "definitions": {
-    "gorefprotoLocation": {
+    "gorefLocation": {
       "type": "object",
       "properties": {
         "position": {
-          "$ref": "#/definitions/protoPosition"
+          "$ref": "#/definitions/gorefPosition"
         },
         "package": {
           "type": "string"
@@ -134,19 +134,7 @@
         }
       }
     },
-    "gorefprotoType": {
-      "type": "string",
-      "enum": [
-        "Instantiation",
-        "Call",
-        "Implementation",
-        "Extension",
-        "Import",
-        "Reference"
-      ],
-      "default": "Instantiation"
-    },
-    "protoPosition": {
+    "gorefPosition": {
       "type": "object",
       "properties": {
         "filename": {
@@ -170,7 +158,7 @@
         }
       }
     },
-    "protoRef": {
+    "gorefRef": {
       "type": "object",
       "properties": {
         "version": {
@@ -178,15 +166,27 @@
           "format": "int64"
         },
         "from": {
-          "$ref": "#/definitions/gorefprotoLocation"
+          "$ref": "#/definitions/gorefLocation"
         },
         "to": {
-          "$ref": "#/definitions/gorefprotoLocation"
+          "$ref": "#/definitions/gorefLocation"
         },
         "type": {
-          "$ref": "#/definitions/gorefprotoType"
+          "$ref": "#/definitions/gorefType"
         }
       }
+    },
+    "gorefType": {
+      "type": "string",
+      "enum": [
+        "Instantiation",
+        "Call",
+        "Implementation",
+        "Extension",
+        "Import",
+        "Reference"
+      ],
+      "default": "Instantiation"
     },
     "serveGetAnnotationsResponse": {
       "type": "object",
@@ -197,7 +197,7 @@
         "annotation": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/protoRef"
+            "$ref": "#/definitions/gorefRef"
           }
         }
       }

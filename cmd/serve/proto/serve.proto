@@ -20,7 +20,7 @@ message GetAnnotationsRequest {
 
 message GetAnnotationsResponse {
   string path = 1;
-  repeated goref.proto.Ref annotation = 2;
+  repeated goref.Ref annotation = 2;
 }
 
 message GetFilesRequest {
