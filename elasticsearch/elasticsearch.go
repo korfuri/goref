@@ -14,8 +14,10 @@ const (
 	// Max number of errors reported in one call to
 	// LoadGraphToElastic
 	maxErrorsReported = 20
+)
 
-	// Types in the Elastic search index
+// Types in the Elastic search index
+const (
 	PackageType = "package"
 	RefType     = "ref"
 	FileType    = "file"

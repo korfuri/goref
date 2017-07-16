@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Asserts that a collection of Ref contains at least one element that
-// satisfies a given predicate.
+// ContainsRefP asserts that a collection of Ref contains at least one
+// element that satisfies a given predicate.
 func ContainsRefP(slc *[]*goref.Ref, pred func(*goref.Ref) bool) bool {
 	return FindRefP(slc, pred) != nil
 }
@@ -56,17 +56,17 @@ func ToPositionFilenamePred(suffix string) func(*goref.Ref) bool {
 	}
 }
 
-// Asserts that there exists a ref (should=true) or doesn't exist any
-// ref (should=false) of type RefType from package fromPkg, from
-// identifier fromId, to package toPkg, to identifier toId. This
-// verifies that the Ref exists in both fromPkg.OutRefs and
-// toPkg.InRefs.
-func AssertPresenceOfRef(t *testing.T, toPkg *goref.Package, toId string, fromPkg *goref.Package, fromId string, reftype goref.RefType, should bool) {
+// AssertPresenceOfRef asserts that there exists a ref (should=true)
+// or doesn't exist any ref (should=false) of type RefType from
+// package fromPkg, from identifier fromID, to package toPkg, to
+// identifier toID. This verifies that the Ref exists in both
+// fromPkg.OutRefs and toPkg.InRefs.
+func AssertPresenceOfRef(t *testing.T, toPkg *goref.Package, toID string, fromPkg *goref.Package, fromID string, reftype goref.RefType, should bool) {
 	refref := &goref.Ref{
 		FromPackage: fromPkg,
 		ToPackage:   toPkg,
-		FromIdent:   fromId,
-		ToIdent:     toId,
+		FromIdent:   fromID,
+		ToIdent:     toID,
 		RefType:     reftype,
 	}
 	pred := EqualRefPred(refref)
@@ -83,12 +83,12 @@ func AssertPresenceOfRef(t *testing.T, toPkg *goref.Package, toId string, fromPk
 // matches the provided parameters. It fails the test if no such ref
 // can be found or if the ref doesn't exist in the corresponding
 // OutRefs.
-func GetRef(t *testing.T, toPkg *goref.Package, toId string, fromPkg *goref.Package, fromId string, reftype goref.RefType) *goref.Ref {
+func GetRef(t *testing.T, toPkg *goref.Package, toID string, fromPkg *goref.Package, fromID string, reftype goref.RefType) *goref.Ref {
 	pred := EqualRefPred(&goref.Ref{
 		FromPackage: fromPkg,
-		FromIdent:   fromId,
+		FromIdent:   fromID,
 		ToPackage:   toPkg,
-		ToIdent:     toId,
+		ToIdent:     toID,
 		RefType:     reftype,
 	})
 	r := FindRefP(&toPkg.InRefs, pred)
