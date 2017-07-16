@@ -153,10 +153,8 @@ func (s server) GetFile(ctx context.Context, req *pb.GetFileRequest) (*pb.GetFil
 			Path:     fpath,
 			Contents: string(f),
 		}, nil
-	} else {
-		return nil, fmt.Errorf("Internal server error")
 	}
-
+	return nil, fmt.Errorf("Internal server error")
 }
 
 func runGRPC(s *server, grpcReady chan struct{}) error {
