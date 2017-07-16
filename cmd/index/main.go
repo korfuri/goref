@@ -42,12 +42,13 @@ func main() {
 	}
 
 	// Create a client
-	client, err := elastic.NewClient(
+	eClient, err := elastic.NewClient(
 		elastic.SetURL(*elasticURL),
 		elastic.SetBasicAuth(*elasticUsername, *elasticPassword))
 	if err != nil {
 		log.Fatal(err)
 	}
+	client := elasticsearch.NewClient(eClient, *elasticIndex)
 
 	packages := args
 
@@ -58,7 +59,7 @@ func main() {
 	}
 	pg := goref.NewPackageGraph(goref.FileMTimeVersion)
 	// Set FilterF to skip any packages that exist in our index
-	pg.SetFilterF(elasticsearch.FilterF(client, *elasticIndex))
+	pg.SetFilterF(elasticsearch.FilterF(client))
 	pg.LoadPackages(packages, *includeTests)
 	log.Info("Computing the interface-implementation matrix.")
 	pg.ComputeInterfaceImplementationMatrix()
@@ -67,7 +68,7 @@ func main() {
 
 	// Load the indexed references into ElasticSearch
 	log.Info("Inserting references into ElasticSearch.")
-	if err := elasticsearch.LoadGraphToElastic(*pg, client, *elasticIndex); err != nil {
+	if err := elasticsearch.LoadGraphToElastic(*pg, client); err != nil {
 		log.Fatalf("Couldn't load some references. Error: %s", err)
 	}
 	log.Info("Done, bye.")

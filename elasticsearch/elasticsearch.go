@@ -7,7 +7,6 @@ import (
 
 	"github.com/korfuri/goref"
 	log "github.com/sirupsen/logrus"
-	elastic "gopkg.in/olivere/elastic.v5"
 )
 
 const (
@@ -16,29 +15,12 @@ const (
 	maxErrorsReported = 20
 )
 
-// Types in the Elastic search index
-const (
-	PackageType = "package"
-	RefType     = "ref"
-	FileType    = "file"
-)
-
-// File represents a mapping of a file in a package
-type File struct {
-	Filename string `json:"filename"`
-	Package  string `json:"package"`
-}
-
 // PackageExists returns whether the provided loadpath + version tuple
 // exists in this index.
-func PackageExists(loadpath string, version int64, client *elastic.Client, index string) bool {
+func PackageExists(loadpath string, version int64, client Client) bool {
 	ctx := context.Background()
 	docID := fmt.Sprintf("v1@%d@%s", version, loadpath)
-	pkgDoc, _ := client.Get().
-		Index(index).
-		Type(PackageType).
-		Id(docID).
-		Do(ctx)
+	pkgDoc, _ := client.GetPackage(ctx, docID)
 	// TODO: handle errors better. Right now we assume that any
 	// error is a 404 and can be ignored safely.
 	return pkgDoc != nil
@@ -46,25 +28,20 @@ func PackageExists(loadpath string, version int64, client *elastic.Client, index
 
 // LoadGraphToElastic loads all Packages and Refs from a PackageGraph
 // to the provided ES index.
-func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index string) error {
+func LoadGraphToElastic(pg goref.PackageGraph, client Client) error {
 	ctx := context.Background()
 	missedRefs := make([]*goref.Ref, 0)
 	missedFiles := make([]string, 0)
 	errs := make([]error, 0)
 
 	for _, p := range pg.Packages {
-		if PackageExists(p.Path, p.Version, client, index) {
+		if PackageExists(p.Path, p.Version, client) {
 			log.Infof("Package %s already exists in this index.", p)
 			continue
 		}
 
 		log.Debugf("Creating Package %s in the index", p)
-		if _, err := client.Index().
-			Index(index).
-			Type(PackageType).
-			Id(p.DocumentID()).
-			BodyJson(p).
-			Do(ctx); err != nil {
+		if err := client.CreatePackage(ctx, p); err != nil {
 			return err
 		}
 
@@ -73,11 +50,7 @@ func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index str
 				Filename: f,
 				Package:  p.Name,
 			}
-			refDoc, err := client.Index().
-				Index(index).
-				Type(FileType).
-				BodyJson(entry).
-				Do(ctx)
+			refDoc, err := client.CreateFile(ctx, entry)
 			if err != nil {
 				missedFiles = append(missedFiles, f)
 				errs = append(errs, err)
@@ -88,11 +61,7 @@ func LoadGraphToElastic(pg goref.PackageGraph, client *elastic.Client, index str
 		}
 
 		for _, r := range p.OutRefs {
-			refDoc, err := client.Index().
-				Index(index).
-				Type(RefType).
-				BodyJson(r).
-				Do(ctx)
+			refDoc, err := client.CreateRef(ctx, r)
 			if err != nil {
 				missedRefs = append(missedRefs, r)
 				errs = append(errs, err)
