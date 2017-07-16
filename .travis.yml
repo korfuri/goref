@@ -5,11 +5,12 @@ go:
 before_install:
   - go get golang.org/x/tools/cmd/cover
   - go get github.com/mattn/goveralls
+  - go get github.com/go-playground/overalls
 script:
   gofmt -l . &&
   go vet ./... &&
-  go test -v -covermode=count -coverprofile=coverage.out &&
-  "${HOME?}"/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken "${COVERALLS_TOKEN?}"
+  overalls -project github.com/korfuri/goref -ignore .git,testprograms &&
+  "${HOME?}"/gopath/bin/goveralls -coverprofile=overalls.coverprofile -service=travis-ci -repotoken "${COVERALLS_TOKEN?}"
 env:
   global:
     secure: cVHqS5W+CgyIFtZwx3DdDh8u3NTiRFmmCmLWzZdEHAbfYHfKq+WO5kWutx341kDe011eUMGA1duPY20HsAXY3xTgNU4JbaQdbImVif2DM+WY2sbFlYLBd6B4CwiVxJX7INZk56aKrwRxhs12G95eVN/EP9kJRpvF03DfpHoff+M3k4001GTrao2T5XmPvvtRdPXZpjPN6ub0RbpDmm+Chyo6iZVm4FdnaHWbfD0H5N11cwgqshBAE3wDQ/lUfBxOxPzbIRJFuGFEmG7UZyx5dbdgPiyZH0NWCB7baASzmb292pPuLoRz12zs542MjLzMVN7F9r9HwFYe37c9jYQrvApoj0Zb242xJivaymLUiIcjUPynwXabmAL9NFSK9UNdwEXsPX/z77xLcqEixoFg/0ZbSoqRvvVuzeWjOITOPvgFL4dz/sxsPzIFsimmOC9wBUsFXDtYz8AxkcbCcvoAUQcwCMovaxUKRpJf9+8Qebs+Iw+DRE4PALSnG5GyvpTGHYaQndsYi0ZsBShOOUcJnfIegjABlXZiuD2XAX6OFfyv+jdJUr5xRJTFsl4AYwiR/948fh5x+bv2CQmCi0v76cOD8GOLdRS6jwAgAxES1VWQ1YGmr0s0Ybpn2JQTcrFZSxE3GwLi0xUwkRxYJIA3Mh293zOUhJHExfJ52ZFkx9k=
