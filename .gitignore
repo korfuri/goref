@@ -85,3 +85,4 @@ TODO.md
 main/main
 cmd/serve/serve
 cmd/index/index
+cmd/daemon/daemon
