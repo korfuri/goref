@@ -4,3 +4,4 @@
     - id: go-fmt
     - id: go-vet
     - id: go-lint
+      exclude: \.pb\.go$
