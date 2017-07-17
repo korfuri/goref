@@ -27,7 +27,11 @@ func ConstantVersion(v int64) func(loader.Program, loader.PackageInfo) (int64, e
 func FileMTimeVersion(prog loader.Program, pi loader.PackageInfo) (int64, error) {
 	newestMTime := time.Time{}
 	for _, f := range pi.Files {
-		filepath := prog.Fset.File(f.Package).Name()
+		file := prog.Fset.File(f.Package)
+		if file == nil {
+			return -1, fmt.Errorf("Missing file")
+		}
+		filepath := file.Name()
 		fi, err := os.Stat(filepath)
 		if err != nil {
 			return -1, err
