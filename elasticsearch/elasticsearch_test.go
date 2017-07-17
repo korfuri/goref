@@ -82,7 +82,7 @@ func TestLoadGraphToElastic_pkgFailsToInsert(t *testing.T) {
 	client.On("GetPackage", mock.Anything, lib).Return(nil, errors.New("not found"))
 
 	// Creating packages, files and refs always works, except to
-	// create fmt.
+	// create lib.
 	matchMain := func(p *goref.Package) bool {
 		t.Logf("Doc id: %s", p.DocumentID())
 		return p.DocumentID() == main
@@ -101,4 +101,74 @@ func TestLoadGraphToElastic_pkgFailsToInsert(t *testing.T) {
 	pg.LoadPackages([]string{pkgpath}, false)
 
 	assert.Error(t, elasticsearch.LoadGraphToElastic(*pg, client))
+}
+
+func TestLoadGraphToElastic_fileFailsToInsert(t *testing.T) {
+	const (
+		pkgpath = "github.com/korfuri/goref/testprograms/interfaces"
+		main    = "v1@0@github.com/korfuri/goref/testprograms/interfaces"
+		lib     = "v1@0@github.com/korfuri/goref/testprograms/interfaces/lib"
+	)
+
+	client := &mocks.Client{}
+
+	// fmt and simple don't exist for this test.
+	client.On("GetPackage", mock.Anything, main).Return(nil, errors.New("not found"))
+	client.On("GetPackage", mock.Anything, lib).Return(nil, errors.New("not found"))
+
+	// Creating packages, files and refs always works, except to
+	// create lib's file.
+	client.On("CreatePackage", mock.Anything, mock.Anything).Return(nil)
+	matchLibGo := func(f elasticsearch.File) bool {
+		return f.Filename == "github.com/korfuri/goref/testprograms/interfaces/lib/lib.go"
+	}
+	matchNotLibGo := func(f elasticsearch.File) bool {
+		return !matchLibGo(f)
+	}
+
+	client.On("CreateFile", mock.Anything, mock.MatchedBy(matchNotLibGo)).Return(&elastic.IndexResponse{}, nil)
+	client.On("CreateFile", mock.Anything, mock.MatchedBy(matchLibGo)).Return(nil, errors.New("cannot create file lib.go"))
+	client.On("CreateRef", mock.Anything, mock.Anything).Return(&elastic.IndexResponse{}, nil)
+
+	pg := goref.NewPackageGraph(goref.ConstantVersion(0))
+	pg.LoadPackages([]string{pkgpath}, false)
+
+	err := elasticsearch.LoadGraphToElastic(*pg, client)
+	assert.Error(t, err)
+	assert.Equal(t, "1 entries couldn't be imported. Errors were:\ncannot create file lib.go\n", err.Error())
+}
+
+func TestLoadGraphToElastic_refFailsToInsert(t *testing.T) {
+	const (
+		pkgpath = "github.com/korfuri/goref/testprograms/interfaces"
+		main    = "v1@0@github.com/korfuri/goref/testprograms/interfaces"
+		lib     = "v1@0@github.com/korfuri/goref/testprograms/interfaces/lib"
+	)
+
+	client := &mocks.Client{}
+
+	// fmt and simple don't exist for this test.
+	client.On("GetPackage", mock.Anything, main).Return(nil, errors.New("not found"))
+	client.On("GetPackage", mock.Anything, lib).Return(nil, errors.New("not found"))
+
+	// Creating packages, files and refs always works, except to
+	// create main's outrefs to lib.
+	client.On("CreatePackage", mock.Anything, mock.Anything).Return(nil)
+	client.On("CreateFile", mock.Anything, mock.Anything).Return(&elastic.IndexResponse{}, nil)
+	matchLibToMain := func(r *goref.Ref) bool {
+		return (r.FromPackage.DocumentID() == main &&
+			r.ToPackage.DocumentID() == lib)
+	}
+	matchNotLibToMain := func(r *goref.Ref) bool {
+		return !matchLibToMain(r)
+	}
+	client.On("CreateRef", mock.Anything, mock.MatchedBy(matchNotLibToMain)).Return(&elastic.IndexResponse{}, nil)
+	client.On("CreateRef", mock.Anything, mock.MatchedBy(matchLibToMain)).Return(nil, errors.New("cannot create ref"))
+
+	pg := goref.NewPackageGraph(goref.ConstantVersion(0))
+	pg.LoadPackages([]string{pkgpath}, false)
+
+	err := elasticsearch.LoadGraphToElastic(*pg, client)
+	assert.Error(t, err)
+	assert.Equal(t, "2 entries couldn't be imported. Errors were:\ncannot create ref\ncannot create ref\n", err.Error())
 }

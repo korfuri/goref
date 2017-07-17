@@ -72,7 +72,7 @@ func LoadGraphToElastic(pg goref.PackageGraph, client Client) error {
 		}
 	}
 	if len(errs) > 0 {
-		errStr := fmt.Sprintf("%d entries couldn't be imported. Errors were:\n", len(missedRefs))
+		errStr := fmt.Sprintf("%d entries couldn't be imported. Errors were:\n", len(errs))
 		c := 0
 		for _, e := range errs {
 			errStr = errStr + e.Error() + "\n"
