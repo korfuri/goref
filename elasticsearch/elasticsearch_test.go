@@ -2,6 +2,8 @@ package elasticsearch_test
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/korfuri/goref"
@@ -171,4 +173,31 @@ func TestLoadGraphToElastic_refFailsToInsert(t *testing.T) {
 	err := elasticsearch.LoadGraphToElastic(*pg, client)
 	assert.Error(t, err)
 	assert.Equal(t, "2 entries couldn't be imported. Errors were:\ncannot create ref\ncannot create ref\n", err.Error())
+}
+
+func TestLoadGraphToElastic_allRefsFailToInsert(t *testing.T) {
+	const (
+		pkgpath = "github.com/korfuri/goref/testprograms/simple"
+	)
+
+	client := &mocks.Client{}
+
+	client.On("GetPackage", mock.Anything, mock.Anything).Return(nil, errors.New("not found"))
+	client.On("CreatePackage", mock.Anything, mock.Anything).Return(nil)
+	client.On("CreateFile", mock.Anything, mock.Anything).Return(&elastic.IndexResponse{}, nil)
+	client.On("CreateRef", mock.Anything, mock.Anything).Return(nil, errors.New("cannot create ref"))
+
+	pg := goref.NewPackageGraph(goref.ConstantVersion(0))
+	pg.LoadPackages([]string{pkgpath}, false)
+
+	err := elasticsearch.LoadGraphToElastic(*pg, client)
+	assert.Error(t, err)
+	// Errors are capped at 20 reported in the error message
+	assert.Contains(t, err.Error(), "entries couldn't be imported. Errors were:")
+	var n int
+	fmt.Sscanf(err.Error(), "%d entries couldn't be imported.", &n)
+	assert.True(t, n > 20)
+	r := regexp.MustCompile("\n")
+	// There's an extra \n due to the leading message.
+	assert.Equal(t, 21, len(r.FindAllStringIndex(err.Error(), -1)))
 }
