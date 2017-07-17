@@ -63,6 +63,9 @@ flycheck_*.el
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
+# Coverage profiles
+*.coverprofile
+
 ### Vim ###
 # swap
 [._]*.s[a-v][a-z]
